@@ -1,0 +1,67 @@
+{
+  "name": "@maxclicks/node-sdk",
+  "version": "1.0.0",
+  "description": "Official Node.js SDK for Maxclicks API - Manage contacts, objects, events, attributes, and templates with full TypeScript support",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "maxclicks",
+    "sdk",
+    "api",
+    "customer-engagement",
+    "contacts",
+    "crm",
+    "email",
+    "marketing",
+    "automation",
+    "typescript",
+    "nodejs"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "npm run build && node scripts/integration-test.mjs",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.{ts,js,json}",
+    "format:check": "prettier --check src/**/*.{ts,js,json}",
+    "prepublishOnly": "npm run build"
+  },
+  "author": "Maxclicks Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxclix/maxclicks-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/maxclix/maxclicks-node/issues"
+  },
+  "homepage": "https://github.com/maxclix/maxclicks-node#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "cross-fetch": "^4.0.0",
+    "vitest-fetch-mock": "^0.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.4",
+    "tsup": "8.5.0",
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

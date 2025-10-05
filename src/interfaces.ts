@@ -1,0 +1,33 @@
+export const MAXCLICKS_ERROR_CODES_BY_KEY = {
+  missing_required_field: 422,
+  invalid_access: 422,
+  invalid_parameter: 422,
+  invalid_region: 422,
+  rate_limit_exceeded: 429,
+  missing_api_key: 401,
+  invalid_api_key: 403,
+  invalid_from_address: 403,
+  validation_error: 400,
+  not_found: 404,
+  method_not_allowed: 405,
+  application_error: 500,
+  internal_server_error: 500,
+  service_unavailable: 503,
+} as const;
+
+export type MAXCLICKS_ERROR_CODE_KEY = keyof typeof MAXCLICKS_ERROR_CODES_BY_KEY;
+
+/**
+ * Standard error response format matching Public API exactly
+ * Matches StandardErrorResponseBody from Public/v1/helpers/errors.ts
+ */
+export interface ErrorResponse {
+  success: false;
+  error: {
+    code: MAXCLICKS_ERROR_CODE_KEY;
+    message: string;
+    details?: Record<string, any>;
+  };
+  requestId: string;
+  timestamp: string;
+}
