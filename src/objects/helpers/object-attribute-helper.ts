@@ -59,7 +59,9 @@ export class ObjectAttributeHelper {
       return response.data.attributes;
     } catch (error) {
       throw new Error(
-        `Failed to fetch object schema attributes: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to fetch object schema attributes: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
       );
     }
   }
@@ -73,13 +75,10 @@ export class ObjectAttributeHelper {
   ): Promise<ObjectAttributeValidationResult> {
     const existingAttributes = await this.fetchObjectSchemaAttributes(schemaSlug);
     const existingAttributeKeys = new Set(existingAttributes.map((attr) => attr.key));
-    const existingAttributesByKey = existingAttributes.reduce(
-      (acc, attr) => {
-        acc[attr.key] = attr;
-        return acc;
-      },
-      {} as Record<string, AttributeResponse>
-    );
+    const existingAttributesByKey = existingAttributes.reduce((acc, attr) => {
+      acc[attr.key] = attr;
+      return acc;
+    }, {} as Record<string, AttributeResponse>);
 
     const missingAttributes: Array<{
       key: string;
@@ -108,7 +107,9 @@ export class ObjectAttributeHelper {
         if (!this.isValueCompatible(value, existingAttr.type)) {
           errors.push({
             field: key,
-            message: `Value type mismatch for attribute '${key}'. Expected: ${existingAttr.type}, got: ${typeof value}`,
+            message: `Value type mismatch for attribute '${key}'. Expected: ${
+              existingAttr.type
+            }, got: ${typeof value}`,
             suggestion: `Convert the value to match the expected type or update the attribute definition`,
           });
         }
@@ -151,9 +152,6 @@ export class ObjectAttributeHelper {
       return validAttributes;
     } catch (error) {
       // If we can't fetch attributes, return empty object to avoid breaking the request
-      console.warn(
-        `Warning: Could not validate attributes for schema '${schemaSlug}': ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
       return {};
     }
   }

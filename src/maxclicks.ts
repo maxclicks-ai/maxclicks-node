@@ -1,6 +1,5 @@
 import type { ErrorResponse } from './interfaces';
 import { version } from '../package.json';
-import { createLogger, type ILogger, type LogLevel } from './common/logger';
 import { ApiKeys } from './api-keys/api-keys';
 import { Events } from './events/events';
 import { Contacts } from './contacts/contacts';
@@ -12,43 +11,20 @@ import { GetOptions } from './common/get-option.interface';
 import { PutOptions } from './common/put-option.interface';
 import { PatchOptions } from './common/patch-option.interface';
 
-/**
- * Configuration options for the Maxclicks SDK
- */
-export interface MaxclicksConfig {
-  /**
-   * API key for authentication (required)
-   * Get your API key from https://app.maxclicks.ai/settings/developers
-   */
-  apiKey: string;
+const defaultBaseUrl = 'https://api.maxclicks.ai';
+const defaultUserAgent = `maxclicks-node:${version}`;
 
-  /**
-   * Base URL for the Maxclicks API
-   * @default 'https://api.maxclicks.ai'
-   */
-  baseUrl?: string;
-
-  /**
-   * Custom User-Agent header
-   * @default 'maxclicks-node:{version}'
-   */
-  userAgent?: string;
-
-  /**
-   * Log level for SDK operations
-   * @default 'silent'
-   */
-  logLevel?: LogLevel;
-}
-
-const DEFAULT_BASE_URL = 'https://api.maxclicks.ai';
-const DEFAULT_USER_AGENT = `maxclicks-node:${version}`;
+const baseUrl =
+  typeof process !== 'undefined' && process.env
+    ? process.env.MAXCLICKS_BASE_URL || defaultBaseUrl
+    : defaultBaseUrl;
+const userAgent =
+  typeof process !== 'undefined' && process.env
+    ? process.env.MAXCLICKS_USER_AGENT || defaultUserAgent
+    : defaultUserAgent;
 
 export class Maxclicks {
-  private readonly headers: Record<string, string>;
-  public baseUrl: string;
-  public readonly logger: ILogger;
-  public readonly key: string;
+  private readonly headers: Headers;
   readonly apiKeys = new ApiKeys(this);
   readonly events = new Events(this);
   readonly contacts = new Contacts(this);
@@ -56,55 +32,24 @@ export class Maxclicks {
   readonly attributes = new Attributes(this);
   readonly templates = new Templates(this);
 
-  /**
-   * Create a new Maxclicks SDK instance
-   *
-   * @param apiKeyOrConfig - API key string or configuration object
-   * @example
-   * ```typescript
-   * // Simple initialization with API key
-   * const maxclicks = new Maxclicks('max_your_api_key');
-   *
-   * // Advanced initialization with configuration
-   * const maxclicks = new Maxclicks({
-   *   apiKey: 'max_your_api_key',
-   *   baseUrl: 'https://api.maxclicks.ai',
-   *   logLevel: 'debug'
-   * });
-   * ```
-   */
-  constructor(apiKeyOrConfig: string | MaxclicksConfig) {
-    // Parse configuration
-    const config: MaxclicksConfig =
-      typeof apiKeyOrConfig === 'string' ? { apiKey: apiKeyOrConfig } : apiKeyOrConfig;
+  constructor(readonly key?: string) {
+    if (!key) {
+      if (typeof process !== 'undefined' && process.env) {
+        this.key = process.env.MAXCLICKS_API_KEY;
+      }
 
-    // Validate API key
-    if (!config.apiKey) {
-      throw new Error(
-        'Maxclicks API key is required. Pass it to the constructor: new Maxclicks("max_your_api_key") or get one at https://app.maxclicks.ai/settings/developers'
-      );
+      if (!this.key) {
+        throw new Error(
+          'Missing API key. Pass it to the constructor `new Maxclicks("80833935-7bd7-4822-bb69-717c455589b1")`'
+        );
+      }
     }
 
-    this.key = config.apiKey;
-    this.baseUrl = config.baseUrl || DEFAULT_BASE_URL;
-
-    const userAgent = config.userAgent || DEFAULT_USER_AGENT;
-
-    this.headers = {
+    this.headers = new Headers({
       Authorization: `Bearer ${this.key}`,
       'User-Agent': userAgent,
       'Content-Type': 'application/json',
-    };
-
-    this.logger = createLogger(config.logLevel || 'silent');
-  }
-
-  /**
-   * Configure the SDK logger level programmatically
-   * Levels: 'silent' | 'error' | 'warn' | 'info' | 'debug'
-   */
-  setLogLevel(level: LogLevel) {
-    this.logger.setLevel(level);
+    });
   }
 
   async fetchRequest<T>(
@@ -112,7 +57,7 @@ export class Maxclicks {
     options = {}
   ): Promise<{ data: T; error: null } | { data: null; error: ErrorResponse }> {
     try {
-      const response = await fetch(`${this.baseUrl}${path}`, options);
+      const response = await fetch(`${baseUrl}${path}`, options);
 
       if (!response.ok) {
         try {
@@ -125,7 +70,6 @@ export class Maxclicks {
           };
         } catch (err) {
           if (err instanceof SyntaxError) {
-            this.logger.error('Failed to parse error response JSON', err);
             return {
               data: null,
               error: {
@@ -152,7 +96,6 @@ export class Maxclicks {
           };
 
           if (err instanceof Error) {
-            this.logger.error('Fetch error', err);
             errorResponse.error.message = err.message;
           }
 
@@ -170,7 +113,6 @@ export class Maxclicks {
       // Assume direct data response for endpoints that return data directly
       return { data: responseData as T, error: null };
     } catch (e) {
-      this.logger.error('Network or fetch request error', e);
       return {
         data: null,
         error: {

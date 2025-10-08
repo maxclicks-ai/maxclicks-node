@@ -1,26 +1,5 @@
+
 # maxclicks Node.js SDK
-
-The official Node.js SDK for the maxclicks API. Build powerful integrations with contacts, objects, events, and templates.
-
-[![npm version](https://badge.fury.io/js/%40maxclicks%2Fnode-sdk.svg)](https://www.npmjs.com/package/@maxclicks/node-sdk)
-[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-## Quick Start
-
-Get up and running in less than 5 minutes:
-
-```bash
-npm install @maxclicks/node-sdk
-```
-
-```typescript
-import { Maxclicks } from '@maxclicks/node-sdk';
-
-const maxclicks = new Maxclicks('your-api-key');
-
-// Create a contact
-# Maxclicks Node.js SDK
 
 The official Node.js SDK for the Maxclicks API. Build powerful customer engagement workflows with contacts, objects, events, attributes, and templates.
 
@@ -28,7 +7,26 @@ The official Node.js SDK for the Maxclicks API. Build powerful customer engageme
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 🚀 Quick Start
+## � Table of Contents
+
+- [Quick Start](#-quick-start)
+- [Installation](#-installation)
+- [Authentication](#-authentication)
+- [Features](#-features)
+- [Core Resources](#-core-resources)
+  - [Contacts](#contacts)
+  - [Objects](#objects)
+  - [Attributes](#attributes)
+  - [Events](#events)
+  - [Templates](#templates)
+  - [API Keys](#api-keys)
+- [Advanced Features](#-advanced-features)
+- [Error Handling](#error-handling)
+- [TypeScript Support](#-typescript-support)
+- [Best Practices](#-best-practices)
+- [Support](#-support)
+
+## �🚀 Quick Start
 
 ```bash
 npm install @maxclicks/node-sdk
@@ -75,15 +73,11 @@ Get your API key from the [Maxclicks Dashboard](https://app.maxclicks.ai/setting
 ```typescript
 import { Maxclicks } from '@maxclicks/node-sdk';
 
-// Simple initialization
+// Initialize with your API key
 const maxclicks = new Maxclicks('max_your_api_key');
 
-// Advanced configuration
-const maxclicks = new Maxclicks({
-  apiKey: 'max_your_api_key',
-  baseUrl: 'https://api.maxclicks.ai', // Optional: defaults to production
-  logLevel: 'debug' // Optional: 'silent' | 'error' | 'warn' | 'info' | 'debug'
-});
+// Or use environment variable
+const maxclicks = new Maxclicks(process.env.MAXCLICKS_API_KEY);
 ```
 
 ## ✨ Features
@@ -97,7 +91,7 @@ const maxclicks = new Maxclicks({
 - 📝 **Auto-create Attributes** - Intelligent attribute management
 - ⚡ **Batch Operations** - Efficient bulk data processing
 
-## 📚 Core Resources
+## �📚 Core Resources
 
 ### Contacts
 
@@ -563,7 +557,7 @@ Send templated communications with dynamic data. Templates must be created in th
 #### Send Template
 
 ```typescript
-// Template ID must be a valid UUID from your Maxclicks dashboard
+// Template ID must be a valid UUID from your Maxclicks dashboard /templates
 const result = await maxclicks.templates.send('123e4567-e89b-12d3-a456-426614174000', {
   data: {
     // The recipient contact (can be ID, email, or contact object)
@@ -700,22 +694,7 @@ Common error codes returned by the API:
 - `missing_required_field` - Required field missing
 - `invalid_parameter` - Invalid parameter value
 - `application_error` - Internal server error
-
-### Logging
-
-Control SDK logging levels:
-
-```typescript
-// Set log level during initialization
-const maxclicks = new Maxclicks({
-  apiKey: 'max_your_api_key',
-  logLevel: 'debug' // 'silent' | 'error' | 'warn' | 'info' | 'debug'
-});
-
-// Change log level at runtime
-maxclicks.setLogLevel('warn');
-```
-
+- 
 ### Pagination
 
 All list endpoints support pagination with 1-based indexing:
@@ -741,14 +720,9 @@ if (result.data) {
 The SDK is written in TypeScript and provides full type definitions. No additional `@types` packages are needed.
 
 ```typescript
-import { Maxclicks, type MaxclicksConfig, type Contact } from '@maxclicks/node-sdk';
+import { Maxclicks, type Contact, type CreateContactRequest } from '@maxclicks/node-sdk';
 
-const config: MaxclicksConfig = {
-  apiKey: process.env.MAXCLICKS_API_KEY!,
-  logLevel: 'debug'
-};
-
-const maxclicks = new Maxclicks(config);
+const maxclicks = new Maxclicks(process.env.MAXCLICKS_API_KEY!);
 ```
 
 ## 📖 Best Practices
@@ -812,14 +786,15 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 - [Get API Key](https://app.maxclicks.ai/settings/developers)
 - [GitHub Repository](https://github.com/maxclix/maxclicks-node)
 - [npm Package](https://www.npmjs.com/package/@maxclicks/node-sdk)
-
 ## 💬 Support
 
-- 📧 Email: dev@maxclicks.ai
-- 💬 Discord: [Join our community](https://discord.gg/maxclicks)
-- 📝 Documentation: [docs.maxclicks.ai](https://docs.maxclicks.ai)
-- 🐛 Issues: [GitHub Issues](https://github.com/maxclix/maxclicks-node/issues)
+Need help? We're here for you!
 
----
+- 📧 **Email**: support@maxclicks.ai
+- � **Documentation**: [docs.maxclicks.ai](https://docs.maxclicks.ai)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/maxclix/maxclicks-node/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/maxclix/maxclicks-node/discussions)
 
-Made with ❤️ by the Maxclicks team
+## 🙏 Acknowledgments
+
+Built with ❤️ by the maxclicks team.

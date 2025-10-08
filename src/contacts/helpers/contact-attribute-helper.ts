@@ -43,7 +43,7 @@ export class AttributeHelper {
 
       return [...(response.data?.attributes || [])];
     } catch (error) {
-      this.maxclicks.logger.warn('Failed to fetch contact attributes:', error);
+      // Silently return empty array on error
       return [];
     }
   }
@@ -56,13 +56,10 @@ export class AttributeHelper {
   ): Promise<AttributeValidationResult> {
     const existingAttributes = await this.fetchContactAttributes();
     const existingAttributeKeys = new Set(existingAttributes.map((attr) => attr.key));
-    const existingAttributesByKey = existingAttributes.reduce(
-      (acc, attr) => {
-        acc[attr.key] = attr;
-        return acc;
-      },
-      {} as Record<string, Attribute>
-    );
+    const existingAttributesByKey = existingAttributes.reduce((acc, attr) => {
+      acc[attr.key] = attr;
+      return acc;
+    }, {} as Record<string, Attribute>);
 
     const missingAttributes: Array<{
       key: string;

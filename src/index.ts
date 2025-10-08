@@ -1,6 +1,6 @@
 export * from './interfaces';
 export type { ErrorResponse } from './interfaces';
-export { Maxclicks, type MaxclicksConfig } from './maxclicks';
+export { Maxclicks } from './maxclicks';
 
 // export { Events } from './events/events'; // Temporarily disabled
 export { Objects } from './objects/objects';

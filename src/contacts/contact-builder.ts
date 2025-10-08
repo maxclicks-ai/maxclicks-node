@@ -50,7 +50,6 @@ export class ContactBuilder {
   private contactId?: string;
   private attributeHelper: AttributeHelper;
   private autoCreateAttributes = false;
-  private quietLogs = true;
 
   constructor(private readonly maxclicks: Maxclicks) {
     this.attributeHelper = new AttributeHelper(maxclicks);
@@ -250,14 +249,6 @@ export class ContactBuilder {
   }
 
   /**
-   * Enable or disable internal logging during auto-create. Defaults to disabled.
-   */
-  debug(enable: boolean = true): this {
-    this.quietLogs = !enable;
-    return this;
-  }
-
-  /**
    * Basic validation for required fields
    * @private
    */
@@ -333,19 +324,6 @@ export class ContactBuilder {
           const creationResult = await this.attributeHelper.createMissingAttributes(
             attributeValidation.missingAttributes
           );
-
-          if (creationResult.created.length > 0 && !this.quietLogs) {
-            this.maxclicks.logger.info(
-              `Auto-created ${creationResult.created.length} custom attributes: ${creationResult.created.join(', ')}`
-            );
-          }
-
-          if (creationResult.failed.length > 0 && !this.quietLogs) {
-            this.maxclicks.logger.warn(
-              `Failed to create ${creationResult.failed.length} attributes:`,
-              creationResult.failed
-            );
-          }
 
           // Re-validate after creation
           const revalidation = await this.attributeHelper.validateCustomAttributes(

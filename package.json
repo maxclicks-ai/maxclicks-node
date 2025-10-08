@@ -33,7 +33,7 @@
     "format:check": "prettier --check src/**/*.{ts,js,json}",
     "prepublishOnly": "npm run build"
   },
-  "author": "Maxclicks Team",
+  "author": "",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -43,18 +43,20 @@
     "url": "https://github.com/maxclix/maxclicks-node/issues"
   },
   "homepage": "https://github.com/maxclix/maxclicks-node#readme",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "engines": {
     "node": ">=16.0.0"
   },
-  "dependencies": {
-    "cross-fetch": "^4.0.0",
-    "vitest-fetch-mock": "^0.4.5"
-  },
   "devDependencies": {
     "@types/node": "22.18.4",
+    "cross-fetch": "^4.0.0",
     "tsup": "8.5.0",
     "typescript": "5.9.2",
-    "vitest": "3.2.4"
+    "vitest": "3.2.4",
+    "vitest-fetch-mock": "^0.4.5"
   },
   "exports": {
     ".": {
