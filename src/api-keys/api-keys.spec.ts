@@ -30,7 +30,7 @@ describe('ApiKeys', () => {
 
   beforeEach(() => {
     fetchMock.mockReset();
-    maxclicks = new Maxclicks('max_test_key_123');
+    maxclicks = new Maxclicks('333c3f39-b3aa-4f00-add0-cd107e2f3a64');
   });
 
   describe('check', () => {
@@ -45,18 +45,17 @@ describe('ApiKeys', () => {
       const result = await maxclicks.apiKeys.check();
 
       expect(fetchMock).toHaveBeenCalledWith(
-        expect.stringContaining('/v1/misc/api-key/check'),
+        'https://api.maxclicks.ai/v1/misc/api-key/check',
         expect.objectContaining({
           method: 'GET',
-          headers: expect.any(Headers),
         })
       );
 
       // Verify the Authorization header is set
       const callArgs = fetchMock.mock.calls[0] as [string, RequestInit];
-      const headers = callArgs[1].headers as Headers;
-      expect(headers.get('Authorization')).toBe('Bearer max_test_key_123');
-      expect(headers.get('Content-Type')).toBe('application/json');
+      const headers = callArgs[1].headers as Record<string, string>;
+      expect(headers['Authorization']).toBe('Bearer 333c3f39-b3aa-4f00-add0-cd107e2f3a64');
+      expect(headers['Content-Type']).toBe('application/json');
 
       expect(result.error).toBe(null);
       expect(result.data).toEqual(mockResponse);
