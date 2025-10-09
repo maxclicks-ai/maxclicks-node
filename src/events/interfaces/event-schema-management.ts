@@ -6,7 +6,7 @@ export interface UpdateEventSchemaByIdRequest {
     readonly name?: string;
     readonly slug?: string;
     readonly description?: string | null;
-    readonly payloadJsonSchema?: Json; // JSON Schema
+    readonly payloadJsonSchema?: Json;
   };
 }
 

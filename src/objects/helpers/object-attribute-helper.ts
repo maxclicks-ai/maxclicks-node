@@ -4,8 +4,8 @@ import type { AttributeResponse, AttributeType } from '../../attributes/interfac
 import { ObjectAttributeValidationResult } from '../interfaces/object-attribute-validation-result';
 
 /**
- * Intelligent object attribute validation and management helper
- * Similar to contact AttributeHelper but for object schemas
+ * object attribute validation and management helper
+ *
  */
 export class ObjectAttributeHelper {
   constructor(private readonly maxclicks: Maxclicks) {}

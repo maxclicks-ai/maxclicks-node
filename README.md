@@ -226,7 +226,7 @@ Work with custom objects and their schemas for storing structured business data.
 #### List Object Schemas
 
 ```typescript
-const result = await maxclicks.objects.listSchemas({
+const result = await maxclicks.objects.schema.list({
   page: 1,
   per_page: 20
 });
@@ -241,13 +241,21 @@ if (result.data) {
 #### Create Object Schema
 
 ```typescript
-const result = await maxclicks.objects.createSchema({
+// Direct API
+const result = await maxclicks.objects.schema.create({
   schema: {
     name: 'Products',
     slug: 'products',
     description: 'Product catalog'
   }
 });
+
+// Fluent Builder (unified with contacts)
+const result = await maxclicks.objects.schema.builder()
+  .slug('products')
+  .name('Products')
+  .description('Product catalog')
+  .execute();
 ```
 
 #### Create Object
@@ -267,7 +275,7 @@ const result = await maxclicks.objects.create('products', {
   }
 });
 
-// Using builder
+// Fluent Builder (unified with contacts)
 const product = await maxclicks.objects.builder()
   .schema('products')
   .objectId('prod-123')
@@ -276,6 +284,7 @@ const product = await maxclicks.objects.builder()
   .attribute('category', 'electronics')
   .tags(['featured', 'premium'])
   .notes('Premium product line')
+  .autoCreateMissingAttributes(true)
   .execute();
 ```
 
@@ -323,7 +332,7 @@ await maxclicks.objects.deleteById('products', 'database-id');
 #### Batch Create Objects
 
 ```typescript
-const result = await maxclicks.objects.createBatch('products', [
+const result = await maxclicks.objects.batch('products').create([
   {
     objectId: 'prod-124',
     attributeValuesByKey: { name: 'Basic Widget', price: 29.99 }

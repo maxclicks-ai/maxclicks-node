@@ -1,5 +1,5 @@
 export * from './object';
-export * from './object-schema';
+export * from './object-schema-interface';
 export * from './create-objects-interface';
 export * from './create-objects-batch-interface';
 export * from './create-object-schema-interface';
@@ -7,4 +7,4 @@ export * from './list-objects-interface';
 export * from './list-object-schemas-interface';
 export * from './update-object-interface';
 export * from './delete-objects-interface';
-export * from './schema-management';
+export * from './update-object-schema-interface';

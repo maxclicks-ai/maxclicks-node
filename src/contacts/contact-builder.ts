@@ -23,7 +23,7 @@ interface ValidationResult {
 
 /**
  * Contact Builder providing fluent API for creating and updating contacts
- * Based on ContactModel.PublicInput from shared package
+ *
  *
  * @example
  * ```typescript
@@ -301,7 +301,6 @@ export class ContactBuilder {
     | { data: null; error: ErrorResponse }
   > {
     try {
-      // Basic validation first
       const validation = this.validate();
       if (!validation.isValid) {
         return {
@@ -310,7 +309,6 @@ export class ContactBuilder {
         };
       }
 
-      // Intelligent custom attribute validation using AttributeHelper
       if (
         this.data.attributeValuesByKey &&
         Object.keys(this.data.attributeValuesByKey).length > 0
@@ -319,13 +317,11 @@ export class ContactBuilder {
           this.data.attributeValuesByKey
         );
 
-        // If there are missing attributes and auto-create is enabled, create them
         if (attributeValidation.missingAttributes.length > 0 && this.autoCreateAttributes) {
           const creationResult = await this.attributeHelper.createMissingAttributes(
             attributeValidation.missingAttributes
           );
 
-          // Re-validate after creation
           const revalidation = await this.attributeHelper.validateCustomAttributes(
             this.data.attributeValuesByKey
           );
@@ -337,7 +333,6 @@ export class ContactBuilder {
             };
           }
         } else if (!attributeValidation.isValid) {
-          // Auto-create not enabled and there are validation errors
           return {
             data: null,
             error: ErrorHelpers.validation(
@@ -347,7 +342,6 @@ export class ContactBuilder {
         }
       }
 
-      // Execute the request
       if (this.isUpdate) {
         if (!this.contactId) {
           return {

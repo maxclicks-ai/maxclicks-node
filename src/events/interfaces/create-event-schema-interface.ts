@@ -2,10 +2,10 @@ import { Json } from '../helpers/json-schema-helper';
 
 export interface CreateEventSchemaRequest {
   readonly schema: {
-    readonly name?: string; // Optional - will be auto-generated from slug if not provided
+    readonly name?: string;
     readonly slug: string;
     readonly description?: string | null;
-    readonly payloadJsonSchema?: Json; // JSON Schema
+    readonly payloadJsonSchema?: Json;
   };
 }
 

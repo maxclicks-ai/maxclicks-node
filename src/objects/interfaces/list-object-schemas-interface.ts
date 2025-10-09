@@ -1,4 +1,4 @@
-import { ObjectSchema } from './object-schema';
+import { ObjectSchema } from './object-schema-interface';
 
 export interface ListObjectSchemasResponse {
   readonly objects: readonly ObjectSchema[];

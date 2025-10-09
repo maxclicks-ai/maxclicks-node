@@ -23,18 +23,33 @@ import { ObjectBuilder, ObjectSchemaBuilder } from './object-builder';
 /**
  * Objects - Complete Object Management
  *
- * Provides comprehensive object operations within existing schemas.
- * Schema management should be done through the web interface or other APIs.
  *
  * @example
  * ```typescript
+ * // ===== Schema Management =====
  * // List object schemas
- * const schemas = await maxclicks.objects.listSchemas({ page: 1, per_page: 20 });
+ * const schemas = await maxclicks.objects.schema.list({ page: 1, per_page: 20 });
  *
+ * // Create schema with direct API
+ * const schema = await maxclicks.objects.schema.create({
+ *   schema: { slug: 'products', name: 'Products', description: 'Product catalog' }
+ * });
+ *
+ * // Create schema with builder (fluent API)
+ * const schema = await maxclicks.objects.schema.builder()
+ *   .slug('products')
+ *   .name('Products')
+ *   .description('Product catalog')
+ *   .execute();
+ *
+ * // ===== Object Operations =====
  * // List objects in a schema
  * const objects = await maxclicks.objects.list('products', { page: 1, per_page: 20 });
  *
- * // Create single object
+ * // Get single object
+ * const product = await maxclicks.objects.get('products', 'prod-123');
+ *
+ * // Create single object with direct API
  * const product = await maxclicks.objects.create('products', {
  *   objectId: 'prod-123',
  *   attributeValuesByKey: {
@@ -44,13 +59,7 @@ import { ObjectBuilder, ObjectSchemaBuilder } from './object-builder';
  *   }
  * });
  *
- * // Create multiple objects
- * const products = await maxclicks.objects.createBatch('products', [
- *   { objectId: 'prod-124', attributeValuesByKey: { name: 'Basic Widget', price: 29.99 } },
- *   { objectId: 'prod-125', attributeValuesByKey: { name: 'Pro Widget', price: 149.99 } }
- * ]);
- *
- * // Use fluent builder for complex scenarios
+ * // Create with builder (fluent API - consistent with Contacts)
  * const complexObject = await maxclicks.objects.builder()
  *   .schema('products')
  *   .objectId('prod-126')
@@ -59,32 +68,63 @@ import { ObjectBuilder, ObjectSchemaBuilder } from './object-builder';
  *   .attribute('features', ['advanced', 'enterprise', 'support'])
  *   .tags(['premium', 'enterprise'])
  *   .notes('Special enterprise configuration')
+ *   .autoCreateMissingAttributes(true)
  *   .execute();
+ *
+ * // Batch create multiple objects
+ * const products = await maxclicks.objects.batch('products').create([
+ *   { objectId: 'prod-124', attributeValuesByKey: { name: 'Basic Widget', price: 29.99 } },
+ *   { objectId: 'prod-125', attributeValuesByKey: { name: 'Pro Widget', price: 149.99 } }
+ * ]);
+ *
+ * // Update object
+ * const updated = await maxclicks.objects.update('products', 'prod-123', {
+ *   attributeValuesByKey: { price: 89.99 }
+ * });
+ *
+ * // Delete object
+ * await maxclicks.objects.deleteById('products', 'prod-123');
  * ```
  */
 export class Objects {
   constructor(private readonly sdk: Maxclicks) {}
 
   /**
-   * Schema management methods
+   * Schema management methods - provides fluent API for schema operations
+   * @example
+   * ```typescript
+   * // List schemas
+   * const schemas = await maxclicks.objects.schema.list({ page: 1, per_page: 20 });
+   *
+   * // Create schema with direct API
+   * const schema = await maxclicks.objects.schema.create({
+   *   schema: { slug: 'products', name: 'Products' }
+   * });
+   *
+   * // Create schema with builder
+   * const schema = await maxclicks.objects.schema.builder()
+   *   .slug('products')
+   *   .name('Products')
+   *   .description('Product catalog')
+   *   .execute();
+   * ```
    */
-  readonly schemas = {
+  readonly schema = {
     list: this.listSchemas.bind(this),
     create: this.createSchema.bind(this),
     update: this.updateSchema.bind(this),
+    builder: () => new ObjectSchemaBuilder(this.sdk),
   };
 
-  readonly objects = {
-    list: this.list.bind(this),
-    get: this.get.bind(this),
-    create: this.create.bind(this),
-    createBatch: this.createBatch.bind(this),
-    update: this.update.bind(this),
-    delete: this.delete.bind(this),
-    deleteById: this.deleteById.bind(this),
-  };
   /**
    * Batch operations for multiple objects
+   * @example
+   * ```typescript
+   * const result = await maxclicks.objects.batch('products').create([
+   *   { objectId: 'prod-1', attributeValuesByKey: { name: 'Widget A' } },
+   *   { objectId: 'prod-2', attributeValuesByKey: { name: 'Widget B' } }
+   * ]);
+   * ```
    */
   batch(schemaSlug: string) {
     return {
@@ -135,7 +175,10 @@ export class Objects {
     { data: CreateObjectSchemaResponse; error: null } | { data: null; error: ErrorResponse }
   > {
     if (!request?.schema?.slug?.trim()) {
-      return { data: null, error: ErrorHelpers.invalidParameter('schema.slug', 'a non-empty slug') };
+      return {
+        data: null,
+        error: ErrorHelpers.invalidParameter('schema.slug', 'a non-empty slug'),
+      };
     }
 
     return this.sdk.post<CreateObjectSchemaResponse>('/v1/objects/schema', request);
@@ -161,7 +204,9 @@ export class Objects {
     if (options.per_page !== undefined) queryParams.append('per_page', options.per_page.toString());
 
     const queryString = queryParams.toString();
-    const path = `/v1/objects/${encodeURIComponent(schemaSlug)}${queryString ? `?${queryString}` : ''}`;
+    const path = `/v1/objects/${encodeURIComponent(schemaSlug)}${
+      queryString ? `?${queryString}` : ''
+    }`;
 
     return this.sdk.get<ListObjectsResponse>(path);
   }
@@ -335,6 +380,16 @@ export class Objects {
   /**
    * Create a fluent builder for complex object creation
    * Provides chainable API for better developer experience
+   * @example
+   * ```typescript
+   * const result = await maxclicks.objects.builder()
+   *   .schema('products')
+   *   .objectId('prod-126')
+   *   .attribute('name', 'Enterprise Widget')
+   *   .attribute('price', 299.99)
+   *   .tags(['premium', 'enterprise'])
+   *   .execute();
+   * ```
    */
   builder(): ObjectBuilder {
     return new ObjectBuilder(this.sdk);

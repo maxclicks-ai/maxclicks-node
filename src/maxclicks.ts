@@ -105,12 +105,10 @@ export class Maxclicks {
 
       const responseData = (await response.json()) as any;
 
-      // Handle standardized success response format
       if (responseData.success === true && 'data' in responseData) {
         return { data: responseData.data as T, error: null };
       }
 
-      // Assume direct data response for endpoints that return data directly
       return { data: responseData as T, error: null };
     } catch (e) {
       return {
@@ -179,7 +177,6 @@ export class Maxclicks {
       headers: this.headers,
     };
 
-    // Only include body if query is provided and not undefined
     if (query !== undefined && query !== null) {
       requestOptions.body = JSON.stringify(query);
     }

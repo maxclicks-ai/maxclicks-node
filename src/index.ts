@@ -2,7 +2,6 @@ export * from './interfaces';
 export type { ErrorResponse } from './interfaces';
 export { Maxclicks } from './maxclicks';
 
-// export { Events } from './events/events'; // Temporarily disabled
 export { Objects } from './objects/objects';
 export { Contacts } from './contacts/contacts';
 export { Attributes } from './attributes/attributes';
@@ -23,7 +22,6 @@ export * from './objects/interfaces/list-object-schemas-interface';
 
 export * from './api-keys/interfaces/api-key';
 
-// Events exports
 export * from './events/interfaces/events';
 export * from './events/interfaces/event-schema';
 export * from './events/interfaces/create-event-schema-interface';

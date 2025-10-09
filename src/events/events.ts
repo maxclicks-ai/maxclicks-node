@@ -20,8 +20,6 @@ import { EventBuilder, SimpleEventBuilder } from './event-builder';
 /**
  * Events - Complete Event Management with Schema Support
  *
- * Provides comprehensive event tracking and schema management capabilities
- * that exactly match the Public API endpoints.
  *
  * @example
  * ```typescript

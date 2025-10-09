@@ -255,10 +255,8 @@ export class ObjectBuilder {
       };
     }
 
-    // Auto-create missing attributes if enabled
     if (this.data.autoCreateMissingAttributes && this.data.attributeValuesByKey) {
       try {
-        // First validate to get missing attributes
         const attributeValidation = await this.attributeHelper.validateObjectAttributes(
           this.data.schemaSlug,
           this.data.attributeValuesByKey
@@ -288,7 +286,6 @@ export class ObjectBuilder {
       }
     }
 
-    // Filter out invalid attributes if not auto-creating
     let finalAttributes = this.data.attributeValuesByKey;
     if (!this.data.autoCreateMissingAttributes && this.data.attributeValuesByKey) {
       try {
@@ -297,7 +294,6 @@ export class ObjectBuilder {
           this.data.attributeValuesByKey
         );
       } catch (error: any) {
-        // Continue with original attributes if filtering fails
         finalAttributes = this.data.attributeValuesByKey;
       }
     }
@@ -316,10 +312,6 @@ export class ObjectBuilder {
     );
   }
 
-  /**
-   * Preview the request that would be sent without executing it
-   * Useful for debugging and testing
-   */
   preview(): {
     url: string;
     method: string;
@@ -399,7 +391,6 @@ export class ObjectSchemaBuilder {
       };
     }
 
-    // Validate slug format
     if (!/^[a-z0-9-]+$/.test(this.data.slug)) {
       return {
         data: null,

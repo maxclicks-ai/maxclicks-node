@@ -1,6 +1,3 @@
-// Contact interfaces based on ContactModel from shared package
-// These interfaces MUST match ContactModel.PublicInput and ContactModel.PublicOutput exactly
-
 /**
  * Custom attribute values organized by attribute key
  * Matches AttributeModel.PublicValuesByKey exactly

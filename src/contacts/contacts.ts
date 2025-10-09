@@ -17,6 +17,67 @@ import type {
 import { ContactBuilder } from './contact-builder';
 
 /**
+ * Contacts - Complete Contact Management
+ *
+ .
+ *
+ * @example
+ * ```typescript
+ * // ===== Contact Operations =====
+ * // List contacts with pagination
+ * const contacts = await maxclicks.contacts.list({ page: 1, per_page: 25 });
+ *
+ * // Get single contact
+ * const contact = await maxclicks.contacts.retrieve('contact-id');
+ * // or
+ * const contact = await maxclicks.contacts.getById('contact-id');
+ *
+ * // Create contact with direct API
+ * const contact = await maxclicks.contacts.create({
+ *   email: 'user@example.com',
+ *   firstName: 'John',
+ *   lastName: 'Doe',
+ *   attributeValuesByKey: { plan: 'premium' }
+ * });
+ *
+ * // Create with builder (fluent API - consistent with Objects)
+ * const contact = await maxclicks.contacts.builder()
+ *   .email('user@example.com')
+ *   .firstName('John')
+ *   .lastName('Doe')
+ *   .customAttribute('plan', 'premium')
+ *   .customAttribute('industry', 'technology')
+ *   .autoCreate(true)  // Auto-create missing custom attributes
+ *   .execute();
+ *
+ * // Quick create helper
+ * const contact = await maxclicks.contacts.quick('user@example.com', 'John', 'Doe');
+ *
+ * // Batch create multiple contacts
+ * const result = await maxclicks.contacts.batch().create([
+ *   { email: 'user1@example.com', firstName: 'John' },
+ *   { email: 'user2@example.com', firstName: 'Jane' }
+ * ]);
+ *
+ * // Update contact with direct API
+ * const updated = await maxclicks.contacts.update('contact-id', {
+ *   firstName: 'Jane',
+ *   customAttribute: { plan: 'enterprise' }
+ * });
+ *
+ * // Update with builder
+ * const updated = await maxclicks.contacts.builder()
+ *   ._markAsUpdate('contact-id')
+ *   .firstName('Jane')
+ *   .customAttribute('plan', 'enterprise')
+ *   .execute();
+ *
+ * // Delete contact
+ * await maxclicks.contacts.deleteById('contact-id');
+ * ```
+ */
+
+/**
  * Enhanced batch operations for multiple contacts
  */
 interface BatchOperations {
@@ -39,25 +100,6 @@ interface BatchOperations {
   >;
 }
 
-/**
- * Contacts API following the public API endpoints exactly
- *
- * ✅ VERIFIED 100% COMPATIBILITY WITH PUBLIC API:
- *
- * Public API Endpoints Supported:
- * - GET /v1/contacts - List contacts with filtering
- * - GET /v1/contacts/:id - Get specific contact
- * - POST /v1/contacts - Create new contact
- * - POST /v1/contacts/batch - Create multiple contacts
- * - PUT /v1/contacts/:id - Update contact
- * - DELETE /v1/contacts - Delete contact by identifier
- * - DELETE /v1/contacts/:id - Delete contact by ID
- *
- * All interfaces match the shared ContactModel types exactly:
- * - Contact interface = ContactModel.PublicOutput
- * - ContactInput interface = ContactModel.PublicInput
- * - All request/response types match public API specifications
- */
 export class Contacts {
   constructor(private readonly maxclicks: Maxclicks) {}
 
@@ -117,7 +159,7 @@ export class Contacts {
 
   /**
    * List contacts with optional filtering and pagination
-   * Maps to GET /v1/contacts endpoint exactly
+   * Maps to GET /v1/contacts
    * Returns ContactModel.PublicOutput[] with pagination info
    *
    * @param options - Filtering and pagination options (matches query params exactly)
@@ -163,7 +205,7 @@ export class Contacts {
 
   /**
    * Retrieve a specific contact by ID
-   * Maps to GET /v1/contacts/:id endpoint exactly
+   * Maps to GET /v1/contacts/:id
    * Returns ContactModel.PublicOutput
    *
    * @param id - Contact ID
@@ -192,7 +234,7 @@ export class Contacts {
 
   /**
    * Alias for retrieve method - get a specific contact by its ID
-   * Maps to GET /v1/contacts/:id endpoint exactly
+   * Maps to GET /v1/contacts/:id
    * Returns the full ContactModel.PublicOutput structure wrapped in expected format
    *
    * @param id - Contact ID to retrieve
@@ -214,7 +256,7 @@ export class Contacts {
 
   /**
    * Update an existing contact with fluent builder pattern or direct API
-   * Maps to PUT /v1/contacts/:id endpoint exactly
+   * Maps to PUT /v1/contacts/:id
    * Body matches ContactModel.PublicInput without id (ID comes from URL params)
    *
    * @param id - Contact ID to update
@@ -260,7 +302,7 @@ export class Contacts {
 
   /**
    * Alias for update method - update an existing contact by ID
-   * Maps to PUT /v1/contacts/:id endpoint exactly
+   * Maps to PUT /v1/contacts/:id
    * Body matches ContactModel.PublicInput without id (ID comes from URL params)
    *
    * @param id - Contact ID to update
@@ -282,7 +324,7 @@ export class Contacts {
 
   /**
    * Delete a contact by ID
-   * Maps to DELETE /v1/contacts/:id endpoint exactly
+   * Maps to DELETE /v1/contacts/:id
    * Returns 204 status with empty body
    *
    * @param id - Contact ID to delete
@@ -315,7 +357,7 @@ export class Contacts {
 
   /**
    * Delete a contact by identifier (id, userId, email, or phone)
-   * Maps to DELETE /v1/contacts endpoint exactly
+   * Maps to DELETE /v1/contacts
    * Body matches DeleteContactRequest exactly
    *
    * @param request - Contact identifier for deletion
@@ -362,7 +404,7 @@ export class Contacts {
 
   /**
    * Batch operations for multiple contacts
-   * Maps to POST /v1/contacts/batch endpoint exactly
+   * Maps to POST /v1/contacts/batch
    * Body is ContactModel.PublicInput[] (array sent directly as body)
    *
    * @example

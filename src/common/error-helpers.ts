@@ -1,8 +1,5 @@
 import type { ErrorResponse, MAXCLICKS_ERROR_CODE_KEY } from '../interfaces';
 
-/**
- * Helper function to create standardized error responses matching the Public API format
- */
 export function createErrorResponse(
   code: MAXCLICKS_ERROR_CODE_KEY,
   message: string,
@@ -15,14 +12,11 @@ export function createErrorResponse(
       message,
       ...(details && { details }),
     },
-    requestId: '', // Will be populated by the actual API response
+    requestId: '',
     timestamp: new Date().toISOString(),
   };
 }
 
-/**
- * Common error response creators matching Public API patterns
- */
 export const ErrorHelpers = {
   validation(message: string, details?: Record<string, any>): ErrorResponse {
     return createErrorResponse('validation_error', message, details);

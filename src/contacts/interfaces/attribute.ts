@@ -1,5 +1,3 @@
-// Attribute interfaces based on AttributeModel from shared package
-
 export const AttributeTypes = [
   'string',
   'number',
@@ -36,7 +34,6 @@ export namespace AttributeType {
   } as const;
 }
 
-// Based on AttributeModel.PublicValue from shared
 export type PublicValue = PublicValue.ByType<AttributeType>;
 
 export namespace PublicValue {
@@ -68,7 +65,6 @@ export namespace PublicValue {
   }
 }
 
-// Based on AttributeModel.PublicValuesByKey from shared
 export interface PublicValuesByKey {
   [key: string]: PublicValue;
 }
