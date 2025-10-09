@@ -850,7 +850,7 @@ describe('Objects', () => {
   });
 
   describe('namespace methods', () => {
-    it('should access list through schemas.list()', async () => {
+    it('should access list through schema.list()', async () => {
       const mockResponse: ListObjectSchemasResponse = {
         objects: [],
         pagination: {
@@ -863,19 +863,19 @@ describe('Objects', () => {
 
       mockSuccessResponse(mockResponse);
 
-      const result = await maxclicks.objects.schemas.list();
+      const result = await maxclicks.objects.schema.list();
 
       expect(result.error).toBe(null);
     });
 
-    it('should access create through schemas.create()', async () => {
+    it('should access create through schema.create()', async () => {
       const mockResponse: CreateObjectSchemaResponse = {
         schemaId: '80833935-7bd7-4822-bb69-717c455589b1',
       };
 
       mockSuccessResponse(mockResponse);
 
-      const result = await maxclicks.objects.schemas.create({
+      const result = await maxclicks.objects.schema.create({
         schema: {
           slug: 'new-schema',
         },
@@ -885,14 +885,14 @@ describe('Objects', () => {
       expect(result.data?.schemaId).toBe('80833935-7bd7-4822-bb69-717c455589b1');
     });
 
-    it('should access update through schemas.update()', async () => {
+    it('should access update through schema.update()', async () => {
       const mockResponse: UpdateObjectSchemaResponse = {
         schemaUpdatedAt: 1704153600000,
       };
 
       mockSuccessResponse(mockResponse);
 
-      const result = await maxclicks.objects.schemas.update({
+      const result = await maxclicks.objects.schema.update({
         schemaId: '06e592cd-8f3d-4efe-9f9e-0a31b1e245ab23',
         schemaUpdates: {
           name: 'Updated Name',
@@ -901,6 +901,15 @@ describe('Objects', () => {
 
       expect(result.error).toBe(null);
       expect(result.data?.schemaUpdatedAt).toBe(1704153600000);
+    });
+
+    it('should access builder through schema.builder()', async () => {
+      const builder = maxclicks.objects.schema.builder();
+      
+      expect(builder).toBeDefined();
+      expect(typeof builder.slug).toBe('function');
+      expect(typeof builder.name).toBe('function');
+      expect(typeof builder.execute).toBe('function');
     });
   });
 });

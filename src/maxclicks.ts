@@ -103,6 +103,11 @@ export class Maxclicks {
         }
       }
 
+      // Handle 204 No Content responses (successful delete operations)
+      if (response.status === 204) {
+        return { data: null as T, error: null };
+      }
+
       const responseData = (await response.json()) as any;
 
       if (responseData.success === true && 'data' in responseData) {
@@ -127,45 +132,41 @@ export class Maxclicks {
   }
 
   async post<T>(path: string, entity?: unknown, options: PostOptions = {}) {
-    const headers = { ...this.headers, ...options.headers };
     const requestOptions = {
       method: 'POST',
       body: JSON.stringify(entity),
       ...options,
-      headers,
+      headers: this.headers,
     };
 
     return this.fetchRequest<T>(path, requestOptions);
   }
   async get<T>(path: string, options: GetOptions = {}) {
-    const headers = { ...this.headers, ...options.headers };
     const requestOptions = {
       method: 'GET',
       ...options,
-      headers,
+      headers: this.headers,
     };
 
     return this.fetchRequest<T>(path, requestOptions);
   }
   async put<T>(path: string, entity: unknown, options: PutOptions = {}) {
-    const headers = { ...this.headers, ...options.headers };
     const requestOptions = {
       method: 'PUT',
       body: JSON.stringify(entity),
       ...options,
-      headers,
+      headers: this.headers,
     };
 
     return this.fetchRequest<T>(path, requestOptions);
   }
 
   async patch<T>(path: string, entity: unknown, options: PatchOptions = {}) {
-    const headers = { ...this.headers, ...options.headers };
     const requestOptions = {
       method: 'PATCH',
       body: JSON.stringify(entity),
       ...options,
-      headers,
+      headers: this.headers,
     };
 
     return this.fetchRequest<T>(path, requestOptions);

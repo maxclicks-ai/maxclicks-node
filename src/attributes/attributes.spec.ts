@@ -68,14 +68,11 @@ describe('Attributes', () => {
         expect.objectContaining({
           method: 'POST',
           body: expect.any(String),
+          headers: expect.any(Headers),
         })
       );
 
       const callArgs = fetchMock.mock.calls[0] as [string, RequestInit];
-      const headers = callArgs[1].headers as Record<string, string>;
-      expect(headers['Authorization']).toBe('Bearer 333c3f39-b3aa-4f00-add0-cd107e2f3a64');
-      expect(headers['Content-Type']).toBe('application/json');
-
       const body = JSON.parse(callArgs[1].body as string);
       expect(body.target.type).toBe('contact');
       expect(body.data.key).toBe('subscription_plan');

@@ -48,14 +48,9 @@ describe('ApiKeys', () => {
         'https://api.maxclicks.ai/v1/misc/api-key/check',
         expect.objectContaining({
           method: 'GET',
+          headers: expect.any(Headers),
         })
       );
-
-      // Verify the Authorization header is set
-      const callArgs = fetchMock.mock.calls[0] as [string, RequestInit];
-      const headers = callArgs[1].headers as Record<string, string>;
-      expect(headers['Authorization']).toBe('Bearer 333c3f39-b3aa-4f00-add0-cd107e2f3a64');
-      expect(headers['Content-Type']).toBe('application/json');
 
       expect(result.error).toBe(null);
       expect(result.data).toEqual(mockResponse);

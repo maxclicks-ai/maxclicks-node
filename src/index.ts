@@ -16,7 +16,7 @@ export * from './objects/interfaces/create-objects-interface';
 export * from './objects/interfaces/update-object-interface';
 export * from './objects/interfaces/delete-objects-interface';
 export * from './objects/interfaces/list-objects-interface';
-export * from './objects/interfaces/object-schema';
+export * from './objects/interfaces/object-schema-interface';
 export * from './objects/interfaces/create-object-schema-interface';
 export * from './objects/interfaces/list-object-schemas-interface';
 
