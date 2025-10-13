@@ -5,7 +5,7 @@ export interface CreateAttributeRequest {
   readonly data: {
     readonly key: string;
     readonly label: string;
-    readonly description: string | null;
+    readonly description?: string;
     readonly type: AttributeType;
   };
 }

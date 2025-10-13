@@ -15,7 +15,7 @@ export interface BatchCreateAttributesRequest {
       readonly key: string;
       /** Human-readable label */
       readonly label: string;
-      /** Optional description */
+      /** Description of the attribute (optional) */
       readonly description?: string;
       /** Attribute data type */
       readonly type: AttributeType;
@@ -35,7 +35,7 @@ export interface BatchCreateAttributesResponse {
         readonly attribute: {
           readonly key: string;
           readonly label: string;
-          readonly description: string | null;
+          readonly description?: string;
           readonly type: AttributeType;
         };
       }

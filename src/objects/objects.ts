@@ -185,6 +185,25 @@ export class Objects {
   }
 
   /**
+   * Update an object schema
+   * Maps to PUT /objects/schema endpoint
+   */
+  async updateSchema(
+    request: UpdateObjectSchemaRequest
+  ): Promise<
+    { data: UpdateObjectSchemaResponse; error: null } | { data: null; error: ErrorResponse }
+  > {
+    if (!request.schemaId) {
+      return {
+        data: null,
+        error: ErrorHelpers.invalidParameter('schemaId', 'a valid object schema ID'),
+      };
+    }
+
+    return this.sdk.put<UpdateObjectSchemaResponse>('/v1/objects/schema', request);
+  }
+
+  /**
    * List objects in a specific schema with pagination
    * Maps to GET /objects/:slug endpoint
    */
@@ -356,25 +375,6 @@ export class Objects {
     return this.sdk.delete<DeleteObjectByIdResponse>(
       `/v1/objects/${encodeURIComponent(schemaSlug)}/${encodeURIComponent(objectId)}`
     );
-  }
-
-  /**
-   * Update an object schema
-   * Maps to PUT /objects/schema endpoint
-   */
-  async updateSchema(
-    request: UpdateObjectSchemaRequest
-  ): Promise<
-    { data: UpdateObjectSchemaResponse; error: null } | { data: null; error: ErrorResponse }
-  > {
-    if (!request.schemaId) {
-      return {
-        data: null,
-        error: ErrorHelpers.invalidParameter('schemaId', 'a valid object schema ID'),
-      };
-    }
-
-    return this.sdk.put<UpdateObjectSchemaResponse>('/v1/objects/schema', request);
   }
 
   /**
