@@ -3,7 +3,7 @@
 
 The official Node.js SDK for the Maxclicks API. Build powerful customer engagement workflows with contacts, objects, events, attributes, and templates.
 
-[![npm version](https://badge.fury.io/js/%40maxclicks%2Fnode-sdk.svg)](https://www.npmjs.com/package/@maxclicks/node-sdk)
+[![npm version](https://badge.fury.io/js/maxclicks.svg)](https://www.npmjs.com/package/maxclicks)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -26,14 +26,14 @@ The official Node.js SDK for the Maxclicks API. Build powerful customer engageme
 - [Best Practices](#-best-practices)
 - [Support](#-support)
 
-## �🚀 Quick Start
+## 🚀 Quick Start
 
 ```bash
-npm install @maxclicks/node-sdk
+npm install maxclicks
 ```
 
 ```typescript
-import { Maxclicks } from '@maxclicks/node-sdk';
+import { Maxclicks } from 'maxclicks';
 
 // Initialize with your API key
 const maxclicks = new Maxclicks('max_your_api_key');
@@ -57,13 +57,13 @@ if (result.error) {
 
 ```bash
 # npm
-npm install @maxclicks/node-sdk
+npm install maxclicks
 
 # yarn
-yarn add @maxclicks/node-sdk
+yarn add maxclicks
 
 # pnpm
-pnpm add @maxclicks/node-sdk
+pnpm add maxclicks
 ```
 
 ## 🔑 Authentication
@@ -71,7 +71,7 @@ pnpm add @maxclicks/node-sdk
 Get your API key from the [Maxclicks Dashboard](https://app.maxclicks.ai/settings/developers).
 
 ```typescript
-import { Maxclicks } from '@maxclicks/node-sdk';
+import { Maxclicks } from 'maxclicks';
 
 // Initialize with your API key
 const maxclicks = new Maxclicks('max_your_api_key');
@@ -729,7 +729,7 @@ if (result.data) {
 The SDK is written in TypeScript and provides full type definitions. No additional `@types` packages are needed.
 
 ```typescript
-import { Maxclicks, type Contact, type CreateContactRequest } from '@maxclicks/node-sdk';
+import { Maxclicks, type Contact, type CreateContactRequest } from 'maxclicks';
 
 const maxclicks = new Maxclicks(process.env.MAXCLICKS_API_KEY!);
 ```
@@ -793,16 +793,16 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 - [Maxclicks Dashboard](https://app.maxclicks.ai)
 - [API Documentation](https://docs.maxclicks.ai)
 - [Get API Key](https://app.maxclicks.ai/settings/developers)
-- [GitHub Repository](https://github.com/maxclix/maxclicks-node)
-- [npm Package](https://www.npmjs.com/package/@maxclicks/node-sdk)
+- [GitHub Repository](https://github.com/maxclicks-ai/maxclicks-node)
+- [npm Package](https://www.npmjs.com/package/maxclicks)
 ## 💬 Support
 
 Need help? We're here for you!
 
 - 📧 **Email**: support@maxclicks.ai
 - � **Documentation**: [docs.maxclicks.ai](https://docs.maxclicks.ai)
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/maxclix/maxclicks-node/issues)
-- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/maxclix/maxclicks-node/discussions)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/maxclicks-ai/maxclicks-node/issues)
+- 💡 **Feature Requests**: [GitHub Discussions](https://github.com/maxclicks-ai/maxclicks-node/discussions)
 
 ## 🙏 Acknowledgments
 

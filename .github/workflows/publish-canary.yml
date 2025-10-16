@@ -1,0 +1,92 @@
+name: Publish to npm (Canary)
+
+on:
+  push:
+    branches:
+      - canary
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+-canary.[0-9]+'
+
+jobs:
+  publish-canary:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Get package version
+        id: package_version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Verify canary version
+        run: |
+          VERSION=${{ steps.package_version.outputs.version }}
+          if [[ ! "$VERSION" =~ -canary\. ]]; then
+            echo "❌ Error: Version must contain '-canary.' for canary releases"
+            echo "Current version: $VERSION"
+            exit 1
+          fi
+
+      - name: Publish to npm (@canary)
+        run: npm publish --tag canary --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create pre-release on GitHub
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Canary Release ${{ github.ref_name }}
+          body: |
+            ## ⚠️ Canary Release - ${{ steps.package_version.outputs.version }}
+
+            This is a pre-release version for testing purposes.
+            **Do not use in production!**
+
+            ### Installation
+            ```bash
+            npm install maxclicks@canary
+            ```
+
+            ### Testing this version
+            ```bash
+            npm install maxclicks@${{ steps.package_version.outputs.version }}
+            ```
+
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/canary/CHANGELOG.md) for details.
+          draft: false
+          prerelease: true
+
+      - name: Notify success
+        if: success()
+        run: |
+          echo "✅ Successfully published canary v${{ steps.package_version.outputs.version }}"
+          echo "📦 Install: npm install maxclicks@canary"
+
+      - name: Notify failure
+        if: failure()
+        run: |
+          echo "❌ Failed to publish canary release"
+          exit 1

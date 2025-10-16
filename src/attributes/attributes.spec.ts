@@ -88,7 +88,7 @@ describe('Attributes', () => {
         attribute: {
           key: 'product_price',
           label: 'Product Price',
-          description: null,
+          description: '',
           type: 'number',
           createdAt: '2025-01-01T00:00:00Z',
           updatedAt: '2025-01-01T00:00:00Z',
@@ -102,7 +102,7 @@ describe('Attributes', () => {
         data: {
           key: 'product_price',
           label: 'Product Price',
-          description: null,
+          description: '',
           type: 'number',
         },
       });
@@ -122,7 +122,7 @@ describe('Attributes', () => {
         data: {
           key: 'test_key',
           label: 'Test Label',
-          description: null,
+          description: '',
           type: 'string',
         },
       });
@@ -139,7 +139,7 @@ describe('Attributes', () => {
         data: {
           key: '',
           label: 'Test Label',
-          description: null,
+          description: '',
           type: 'string',
         },
       });
@@ -156,7 +156,7 @@ describe('Attributes', () => {
         data: {
           key: 'test_key',
           label: '',
-          description: null,
+          description: '',
           type: 'string',
         },
       });
@@ -173,7 +173,7 @@ describe('Attributes', () => {
         data: {
           key: 'test_key',
           label: 'Test Label',
-          description: null,
+          description: '',
           type: '' as any,
         },
       });
@@ -190,7 +190,7 @@ describe('Attributes', () => {
         data: {
           key: 'test_key',
           label: 'Test Label',
-          description: null,
+          description: '',
           type: 'string',
         },
       });
@@ -219,7 +219,7 @@ describe('Attributes', () => {
         data: {
           key: 'subscription_plan',
           label: 'Subscription Plan',
-          description: null,
+          description: '',
           type: 'string',
         },
       });
@@ -246,7 +246,7 @@ describe('Attributes', () => {
         data: {
           key: 'test_key',
           label: 'Test Label',
-          description: null,
+          description: '',
           type: 'invalid_type' as any,
         },
       });
@@ -263,7 +263,7 @@ describe('Attributes', () => {
         data: {
           key: 'test_key',
           label: 'Test Label',
-          description: null,
+          description: '',
           type: 'string',
         },
       });
@@ -291,7 +291,7 @@ describe('Attributes', () => {
             attribute: {
               key: 'signup_date',
               label: 'Signup Date',
-              description: null,
+              description: '',
               type: 'date time',
             },
           },
@@ -344,7 +344,7 @@ describe('Attributes', () => {
             attribute: {
               key: 'subscription_plan',
               label: 'Subscription Plan',
-              description: null,
+              description: '',
               type: 'string',
             },
           },
@@ -533,7 +533,7 @@ describe('Attributes', () => {
           {
             key: 'signup_date',
             label: 'Signup Date',
-            description: null,
+            description: '',
             type: 'date time',
             createdAt: '2025-01-01T00:00:00Z',
             updatedAt: '2025-01-01T00:00:00Z',
@@ -797,7 +797,7 @@ describe('Attributes', () => {
         attribute: {
           key: 'product_price',
           label: 'Product Price',
-          description: null,
+          description: '',
           type: 'number',
           createdAt: '2025-01-01T00:00:00Z',
           updatedAt: '2025-01-01T00:00:00Z',
@@ -824,7 +824,7 @@ describe('Attributes', () => {
         attribute: {
           key: 'subscription_plan',
           label: 'Subscription Plan',
-          description: null,
+          description: '',
           type: 'string',
         },
       };
