@@ -1,7 +1,6 @@
 shared/
 Public/
 scripts/
-/tests/
 docs/
 # Environment variables (NEVER commit API keys!)
 .env
