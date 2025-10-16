@@ -1,3 +1,8 @@
+## [1.0.0-canary.1] - 2025-10-16 (Canary)
+
+### Changes
+- Canary pre-release for testing
+
 ## [1.0.0-canary.2] - 2025-10-16 (Canary)
 
 ### Changes
