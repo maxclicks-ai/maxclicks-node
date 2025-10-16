@@ -1,5 +1,5 @@
 {
-  "name": "@maxclicks/node-sdk",
+  "name": "maxclicks",
   "version": "1.0.0",
   "description": "Official Node.js SDK for Maxclicks API - Manage contacts, objects, events, attributes, and templates with full TypeScript support",
   "main": "dist/index.js",
@@ -26,7 +26,7 @@
     "build": "tsup src/index.ts --format esm,cjs --dts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:integration": "npm run build && node scripts/integration-test.mjs",
+    "test:integration": "node tests/integration.test.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.{ts,js,json}",
@@ -37,12 +37,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/maxclix/maxclicks-node.git"
+    "url": "https://github.com/maxclicks-ai/maxclicks-node.git"
   },
   "bugs": {
-    "url": "https://github.com/maxclix/maxclicks-node/issues"
+    "url": "https://github.com/maxclicks-ai/maxclicks-node/issues"
   },
-  "homepage": "https://github.com/maxclix/maxclicks-node#readme",
+  "homepage": "https://github.com/maxclicks-ai/maxclicks-node#readme",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"

@@ -11,7 +11,7 @@ import { GetOptions } from './common/get-option.interface';
 import { PutOptions } from './common/put-option.interface';
 import { PatchOptions } from './common/patch-option.interface';
 
-const defaultBaseUrl = 'https://api.maxclicks.ai';
+const defaultBaseUrl = 'https://api-stage.maxclicks.ai';
 const defaultUserAgent = `maxclicks-node:${version}`;
 
 const baseUrl =

@@ -17,10 +17,6 @@ export const MAXCLICKS_ERROR_CODES_BY_KEY = {
 
 export type MAXCLICKS_ERROR_CODE_KEY = keyof typeof MAXCLICKS_ERROR_CODES_BY_KEY;
 
-/**
- * Standard error response format matching Public API exactly
- * Matches StandardErrorResponseBody from Public/v1/helpers/errors.ts
- */
 export interface ErrorResponse {
   success: false;
   error: {
