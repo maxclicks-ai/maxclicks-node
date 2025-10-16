@@ -1,6 +1,6 @@
 {
   "name": "maxclicks",
-  "version": "1.0.0",
+  "version": "1.0.0-canary.2",
   "description": "Official Node.js SDK for Maxclicks API - Manage contacts, objects, events, attributes, and templates with full TypeScript support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
