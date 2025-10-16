@@ -1,5 +1,6 @@
+![max-nodejs-cover](https://github.com/user-attachments/assets/3f4ca37e-ef34-48e5-a09d-65587a4e3b9d)
 
-# maxclicks Node.js SDK
+# Maxclicks Node.js SDK!
 
 The official Node.js SDK for the Maxclicks API. Build powerful customer engagement workflows with contacts, objects, events, attributes, and templates.
 
