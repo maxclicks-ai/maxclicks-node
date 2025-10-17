@@ -10,6 +10,7 @@ import type {
   ListContactsResponse,
 } from './interfaces';
 import type { ErrorResponse } from '../interfaces';
+import { TEST_BASE_URL, TEST_API_KEY } from '../test-utils/test-config';
 
 const fetchMock = vi.fn();
 global.fetch = fetchMock as unknown as typeof fetch;
@@ -38,7 +39,7 @@ describe('Contacts', () => {
 
   beforeEach(() => {
     fetchMock.mockReset();
-    maxclicks = new Maxclicks('333c3f39-b3aa-4f00-add0-cd107e2f3a64');
+    maxclicks = new Maxclicks(TEST_API_KEY);
   });
 
   describe('create (direct API)', () => {
@@ -56,7 +57,7 @@ describe('Contacts', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/contacts',
+        `${TEST_BASE_URL}/v1/contacts`,
         expect.objectContaining({
           method: 'POST',
           body: expect.any(String),
@@ -295,7 +296,7 @@ describe('Contacts', () => {
       ]);
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/contacts/batch',
+        `${TEST_BASE_URL}/v1/contacts/batch`,
         expect.objectContaining({
           method: 'POST',
         })
@@ -381,7 +382,7 @@ describe('Contacts', () => {
       const result = await maxclicks.contacts.list();
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/contacts',
+        `${TEST_BASE_URL}/v1/contacts`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -408,7 +409,7 @@ describe('Contacts', () => {
       const result = await maxclicks.contacts.list({ name: 'John' });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/contacts?name=John',
+        `${TEST_BASE_URL}/v1/contacts?name=John`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -433,7 +434,7 @@ describe('Contacts', () => {
       const result = await maxclicks.contacts.list({ email: 'john@example.com' });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/contacts?email=john%40example.com',
+        `${TEST_BASE_URL}/v1/contacts?email=john%40example.com`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -458,7 +459,7 @@ describe('Contacts', () => {
       const result = await maxclicks.contacts.list({ page: 2, per_page: 50 });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/contacts?page=2&per_page=50',
+        `${TEST_BASE_URL}/v1/contacts?page=2&per_page=50`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -504,7 +505,7 @@ describe('Contacts', () => {
       const result = await maxclicks.contacts.retrieve('99cd1948-d950-4504-b925-07533602895e23');
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/contacts/99cd1948-d950-4504-b925-07533602895e23',
+        `${TEST_BASE_URL}/v1/contacts/99cd1948-d950-4504-b925-07533602895e23`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -593,7 +594,7 @@ describe('Contacts', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/contacts/99cd1948-d950-4504-b925-07533602895e23',
+        `${TEST_BASE_URL}/v1/contacts/99cd1948-d950-4504-b925-07533602895e23`,
         expect.objectContaining({
           method: 'PUT',
           body: expect.any(String),
@@ -759,7 +760,7 @@ describe('Contacts', () => {
       const result = await maxclicks.contacts.deleteById('99cd1948-d950-4504-b925-07533602895e23');
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/contacts/99cd1948-d950-4504-b925-07533602895e23',
+        `${TEST_BASE_URL}/v1/contacts/99cd1948-d950-4504-b925-07533602895e23`,
         expect.objectContaining({
           method: 'DELETE',
         })
@@ -819,7 +820,7 @@ describe('Contacts', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/contacts',
+        `${TEST_BASE_URL}/v1/contacts`,
         expect.objectContaining({
           method: 'DELETE',
         })

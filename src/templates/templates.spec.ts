@@ -2,6 +2,7 @@ import { vi, describe, beforeEach, it, expect } from 'vitest';
 import { Maxclicks } from '../maxclicks';
 import type { SendTemplateResponse } from './interfaces/template-interface';
 import type { ErrorResponse } from '../interfaces';
+import { TEST_BASE_URL, TEST_API_KEY } from '../test-utils/test-config';
 
 const fetchMock = vi.fn();
 global.fetch = fetchMock as unknown as typeof fetch;
@@ -30,7 +31,7 @@ describe('Templates', () => {
 
   beforeEach(() => {
     fetchMock.mockReset();
-    maxclicks = new Maxclicks('333c3f39-b3aa-4f00-add0-cd107e2f3a64');
+    maxclicks = new Maxclicks(TEST_API_KEY);
   });
 
   describe('send', () => {
@@ -54,7 +55,7 @@ describe('Templates', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        `https://api.maxclicks.ai/v1/template/${templateIdFromApp}/send`,
+        `https://api-stage.maxclicks.ai/v1/template/${templateIdFromApp}/send`,
         expect.objectContaining({
           method: 'POST',
           body: expect.any(String),
@@ -136,7 +137,7 @@ describe('Templates', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        `https://api.maxclicks.ai/v1/template/${templateIdFromApp}/send`,
+        `https://api-stage.maxclicks.ai/v1/template/${templateIdFromApp}/send`,
         expect.anything()
       );
 

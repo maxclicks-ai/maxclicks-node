@@ -2,6 +2,7 @@ import { vi, describe, beforeEach, it, expect } from 'vitest';
 import { Maxclicks } from '../maxclicks';
 import type { ApiKeyCheck } from './interfaces/api-key';
 import type { ErrorResponse } from '../interfaces';
+import { TEST_BASE_URL, TEST_API_KEY } from '../test-utils/test-config';
 
 const fetchMock = vi.fn();
 global.fetch = fetchMock as unknown as typeof fetch;
@@ -30,7 +31,7 @@ describe('ApiKeys', () => {
 
   beforeEach(() => {
     fetchMock.mockReset();
-    maxclicks = new Maxclicks('333c3f39-b3aa-4f00-add0-cd107e2f3a64');
+    maxclicks = new Maxclicks(TEST_API_KEY);
   });
 
   describe('check', () => {
@@ -45,7 +46,7 @@ describe('ApiKeys', () => {
       const result = await maxclicks.apiKeys.check();
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/misc/api-key/check',
+        `${TEST_BASE_URL}/v1/misc/api-key/check`,
         expect.objectContaining({
           method: 'GET',
           headers: expect.any(Headers),

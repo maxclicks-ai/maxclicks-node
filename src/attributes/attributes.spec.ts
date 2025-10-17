@@ -7,6 +7,7 @@ import type {
   BatchCreateAttributesResponse,
 } from './interfaces';
 import type { ErrorResponse } from '../interfaces';
+import { TEST_BASE_URL, TEST_API_KEY } from '../test-utils/test-config';
 
 const fetchMock = vi.fn();
 global.fetch = fetchMock as unknown as typeof fetch;
@@ -35,7 +36,7 @@ describe('Attributes', () => {
 
   beforeEach(() => {
     fetchMock.mockReset();
-    maxclicks = new Maxclicks('333c3f39-b3aa-4f00-add0-cd107e2f3a64');
+    maxclicks = new Maxclicks(TEST_API_KEY);
   });
 
   describe('create', () => {
@@ -64,7 +65,7 @@ describe('Attributes', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/attributes',
+        `${TEST_BASE_URL}/v1/attributes`,
         expect.objectContaining({
           method: 'POST',
           body: expect.any(String),
@@ -323,7 +324,7 @@ describe('Attributes', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/attributes/batch',
+        `${TEST_BASE_URL}/v1/attributes/batch`,
         expect.objectContaining({
           method: 'POST',
         })
@@ -548,7 +549,7 @@ describe('Attributes', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/attributes?target_type=contact',
+        `${TEST_BASE_URL}/v1/attributes?target_type=contact`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -581,7 +582,7 @@ describe('Attributes', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/attributes?target_type=object&objectSchemaId=products',
+        `${TEST_BASE_URL}/v1/attributes?target_type=object&objectSchemaId=products`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -670,7 +671,7 @@ describe('Attributes', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/attributes/subscription_plan',
+        `${TEST_BASE_URL}/v1/attributes/subscription_plan`,
         expect.objectContaining({
           method: 'DELETE',
         })

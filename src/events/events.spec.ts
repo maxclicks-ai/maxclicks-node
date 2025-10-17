@@ -8,6 +8,7 @@ import type {
   GetEventSchemaResponse,
 } from './interfaces';
 import type { ErrorResponse } from '../interfaces';
+import { TEST_BASE_URL, TEST_API_KEY } from '../test-utils/test-config';
 
 const fetchMock = vi.fn();
 global.fetch = fetchMock as unknown as typeof fetch;
@@ -36,7 +37,7 @@ describe('Events', () => {
 
   beforeEach(() => {
     fetchMock.mockReset();
-    maxclicks = new Maxclicks('333c3f39-b3aa-4f00-add0-cd107e2f3a64');
+    maxclicks = new Maxclicks(TEST_API_KEY);
   });
 
   describe('createSchema', () => {
@@ -64,7 +65,7 @@ describe('Events', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/events/schema',
+        `${TEST_BASE_URL}/v1/events/schema`,
         expect.objectContaining({
           method: 'POST',
           body: expect.any(String),
@@ -261,7 +262,7 @@ describe('Events', () => {
       const result = await maxclicks.events.listSchemas();
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/events/schema',
+        `${TEST_BASE_URL}/v1/events/schema`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -288,7 +289,7 @@ describe('Events', () => {
       const result = await maxclicks.events.listSchemas({ page: 2, per_page: 50 });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/events/schema?page=2&per_page=50',
+        `${TEST_BASE_URL}/v1/events/schema?page=2&per_page=50`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -353,7 +354,7 @@ describe('Events', () => {
       const result = await maxclicks.events.getSchema('user-signup');
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/events/schema/user-signup',
+        `${TEST_BASE_URL}/v1/events/schema/user-signup`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -420,7 +421,7 @@ describe('Events', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/events/schema',
+        `${TEST_BASE_URL}/v1/events/schema`,
         expect.objectContaining({
           method: 'PUT',
           body: expect.any(String),
@@ -535,7 +536,7 @@ describe('Events', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/events',
+        `${TEST_BASE_URL}/v1/events`,
         expect.objectContaining({
           method: 'POST',
           body: expect.any(String),

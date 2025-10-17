@@ -13,6 +13,7 @@ import type {
   ListObjectSchemasResponse,
 } from './interfaces';
 import type { ErrorResponse } from '../interfaces';
+import { TEST_BASE_URL, TEST_API_KEY } from '../test-utils/test-config';
 
 const fetchMock = vi.fn();
 global.fetch = fetchMock as unknown as typeof fetch;
@@ -41,7 +42,7 @@ describe('Objects', () => {
 
   beforeEach(() => {
     fetchMock.mockReset();
-    maxclicks = new Maxclicks('333c3f39-b3aa-4f00-add0-cd107e2f3a64');
+    maxclicks = new Maxclicks(TEST_API_KEY);
   });
 
   describe('createSchema', () => {
@@ -61,7 +62,7 @@ describe('Objects', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/schema',
+        `${TEST_BASE_URL}/v1/objects/schema`,
         expect.objectContaining({
           method: 'POST',
           body: expect.any(String),
@@ -179,7 +180,7 @@ describe('Objects', () => {
       const result = await maxclicks.objects.listSchemas();
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/schema',
+        `${TEST_BASE_URL}/v1/objects/schema`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -206,7 +207,7 @@ describe('Objects', () => {
       const result = await maxclicks.objects.listSchemas({ page: 2, per_page: 50 });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/schema?page=2&per_page=50',
+        `${TEST_BASE_URL}/v1/objects/schema?page=2&per_page=50`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -242,7 +243,7 @@ describe('Objects', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/schema',
+        `${TEST_BASE_URL}/v1/objects/schema`,
         expect.objectContaining({
           method: 'PUT',
           body: expect.any(String),
@@ -301,7 +302,7 @@ describe('Objects', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/products',
+        `${TEST_BASE_URL}/v1/objects/products`,
         expect.objectContaining({
           method: 'POST',
           body: expect.any(String),
@@ -406,7 +407,7 @@ describe('Objects', () => {
       ]);
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/products/batch',
+        `${TEST_BASE_URL}/v1/objects/products/batch`,
         expect.objectContaining({
           method: 'POST',
         })
@@ -483,7 +484,7 @@ describe('Objects', () => {
       const result = await maxclicks.objects.list('products');
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/products',
+        `${TEST_BASE_URL}/v1/objects/products`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -510,7 +511,7 @@ describe('Objects', () => {
       const result = await maxclicks.objects.list('products', { page: 2, per_page: 50 });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/products?page=2&per_page=50',
+        `${TEST_BASE_URL}/v1/objects/products?page=2&per_page=50`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -558,7 +559,7 @@ describe('Objects', () => {
       );
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/products/281cfdf5-c593-4c6c-a5d0-b51b813c217a',
+        `${TEST_BASE_URL}/v1/objects/products/281cfdf5-c593-4c6c-a5d0-b51b813c217a`,
         expect.objectContaining({
           method: 'GET',
         })
@@ -652,7 +653,7 @@ describe('Objects', () => {
       );
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/products/281cfdf5-c593-4c6c-a5d0-b51b813c217a',
+        `${TEST_BASE_URL}/v1/objects/products/281cfdf5-c593-4c6c-a5d0-b51b813c217a`,
         expect.objectContaining({
           method: 'PUT',
           body: expect.any(String),
@@ -725,7 +726,7 @@ describe('Objects', () => {
       });
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/products',
+        `${TEST_BASE_URL}/v1/objects/products`,
         expect.objectContaining({
           method: 'DELETE',
         })
@@ -795,7 +796,7 @@ describe('Objects', () => {
       );
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.maxclicks.ai/v1/objects/products/281cfdf5-c593-4c6c-a5d0-b51b813c217a',
+        `${TEST_BASE_URL}/v1/objects/products/281cfdf5-c593-4c6c-a5d0-b51b813c217a`,
         expect.objectContaining({
           method: 'DELETE',
         })
@@ -905,7 +906,7 @@ describe('Objects', () => {
 
     it('should access builder through schema.builder()', async () => {
       const builder = maxclicks.objects.schema.builder();
-      
+
       expect(builder).toBeDefined();
       expect(typeof builder.slug).toBe('function');
       expect(typeof builder.name).toBe('function');
