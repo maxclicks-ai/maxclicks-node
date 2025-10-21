@@ -252,6 +252,15 @@ git push origin develop
 git branch -d hotfix/1.0.1-template-validation
 ```
 
+## Unpulish withing 72 hours window
+```bash
+npm view maxclicks versions --json
+```
+
+```bash
+npm unpublish maxclicks@1.0.0-canary.0 --force
+```
+
 ## NPM Publishing Strategy
 
 ### Distribution Tags
