@@ -1,0 +1,42 @@
+{
+  "name": "@maxclicks/types",
+  "version": "1.0.0",
+  "description": "The official maxclicks Node.js SDK for API access",
+  "author": "maxclicks",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "c": "npm run check",
+    "check": "tsc --noEmit",
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"No test yet, but keep the script for CI/CD pipelines.\""
+  },
+  "keywords": [
+    "maxclicks",
+    "types",
+    "typescript",
+    "api"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maxclicks/types"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@maxclicks/core": "file:../core",
+    "@swc/helpers": "^0.5.17"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
