@@ -1,15 +1,12 @@
 {
   "compilerOptions": {
-    /* Language and Environment */
     "target": "ES2020",
     "lib": ["ES2020", "DOM"],
 
-    /* Modules */
     "module": "ESNext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
 
-    /* Emit */
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -17,14 +14,12 @@
     "removeComments": true,
     "importHelpers": true,
 
-    /* Interop Constraints */
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
     "forceConsistentCasingInFileNames": true,
 
-    /* Type Checking */
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -41,7 +36,6 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": false,
 
-    /* Completeness */
     "skipLibCheck": true
   },
   "include": ["src/**/*"],

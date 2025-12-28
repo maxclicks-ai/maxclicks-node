@@ -1,5 +1,5 @@
 {
-  "name": "@maxclicks/types",
+  "name": "maxclicks",
   "version": "1.0.0",
   "description": "The official maxclicks Node.js SDK for API access",
   "author": "maxclicks",
@@ -14,29 +14,54 @@
   ],
   "scripts": {
     "c": "npm run check",
+    "l": "npm run lint.staged",
     "check": "tsc --noEmit",
     "build": "tsc",
+    "lint.staged": "cross-env STRICT_MODE=true npx lint-staged --verbose --continue-on-error",
+    "publish:dev": "node scripts/publish-dev.js",
+    "publish:canary": "node scripts/publish-canary.js",
+    "publish:stable": "node scripts/publish-stable.js",
+    "unpublish": "node scripts/unpublish.js",
+    "test": "echo \"No test yet, but keep the script for CI/CD pipelines.\"",
     "prepublishOnly": "npm run build",
-    "test": "echo \"No test yet, but keep the script for CI/CD pipelines.\""
+    "prepare": "lefthook install"
   },
   "keywords": [
     "maxclicks",
-    "types",
+    "nodejs",
+    "sdk",
     "typescript",
     "api"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/maxclicks/types"
+    "url": "https://github.com/maxclicks-ai/maxclicks-node"
   },
   "publishConfig": {
     "access": "public"
   },
+  "engines": {
+    "node": ">=24.12.0",
+    "npm": ">=11.6.2"
+  },
   "dependencies": {
-    "@maxclicks/core": "file:../core",
     "@swc/helpers": "^0.5.17"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "@eslint/js": "^9.39.2",
+    "@eslint/json": "^0.14.0",
+    "@eslint/markdown": "^7.5.1",
+    "@types/node": "^25.0.3",
+    "cross-env": "^10.1.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.5.0",
+    "jiti": "^2.6.1",
+    "lefthook": "^2.0.13",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.4",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.50.1"
   }
 }

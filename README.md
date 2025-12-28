@@ -1,17 +1,17 @@
-# @maxclicks/types
+# maxclicks
 
-Shared public API types and implementations for maxclicks projects.
+The official maxclicks Node.js SDK for API access.
 
 ## Installation
 
 ```bash
-npm install @maxclicks/types
+npm install maxclicks
 ```
 
 ## Usage
 
 ```typescript
-import {} from /* your exports */ '@maxclicks/types'
+import {} from "maxclicks";
 ```
 
 ## Development

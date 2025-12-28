@@ -1,0 +1,47 @@
+name: Publish Dev
+
+# Triggered via GitHub CLI: gh workflow run publish-dev.yml
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+
+      - name: Set dev version
+        id: version
+        run: |
+          PACKAGE=$(node -p "require('./package.json').name")
+          BASE=$(node -p "require('./package.json').version.split('-')[0]")
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          VERSION="${BASE}-dev.${TIMESTAMP}"
+          npm version $VERSION --no-git-tag-version
+          echo "package=$PACKAGE" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Publish to npm (dev tag)
+        run: npm publish --tag dev
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "## Published Dev Version" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Version: \`${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Install with:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "npm install ${{ steps.version.outputs.package }}@dev" >> $GITHUB_STEP_SUMMARY
+          echo "npm install ${{ steps.version.outputs.package }}@${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
