@@ -38,6 +38,6 @@
 
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "test/**/*", "tsup.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

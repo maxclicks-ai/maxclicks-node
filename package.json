@@ -1,12 +1,27 @@
 {
   "name": "maxclicks",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "The official maxclicks Node.js SDK for API access",
   "author": "maxclicks",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "sideEffects": false,
   "files": [
     "dist",
     "README.md",
@@ -16,13 +31,13 @@
     "c": "npm run check",
     "l": "npm run lint.staged",
     "check": "tsc --noEmit",
-    "build": "tsc",
+    "build": "tsup",
+    "test": "node --import tsx --test test/*.test.ts",
     "lint.staged": "cross-env STRICT_MODE=true npx lint-staged --verbose --continue-on-error",
     "publish:dev": "node scripts/publish-dev.js",
     "publish:canary": "node scripts/publish-canary.js",
     "publish:stable": "node scripts/publish-stable.js",
     "unpublish": "node scripts/unpublish.js",
-    "test": "echo \"No test yet, but keep the script for CI/CD pipelines.\"",
     "prepublishOnly": "npm run build",
     "prepare": "lefthook install"
   },
@@ -31,21 +46,25 @@
     "nodejs",
     "sdk",
     "typescript",
-    "api"
+    "api",
+    "crm",
+    "email",
+    "marketing",
+    "automation"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/maxclicks-ai/maxclicks-node"
   },
+  "homepage": "https://github.com/maxclicks-ai/maxclicks-node#readme",
+  "bugs": {
+    "url": "https://github.com/maxclicks-ai/maxclicks-node/issues"
+  },
   "publishConfig": {
     "access": "public"
   },
   "engines": {
-    "node": ">=24.12.0",
-    "npm": ">=11.6.2"
-  },
-  "dependencies": {
-    "@swc/helpers": "^0.5.17"
+    "node": ">=18"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -61,6 +80,8 @@
     "lefthook": "^2.0.13",
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.4",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.50.1"
   }
