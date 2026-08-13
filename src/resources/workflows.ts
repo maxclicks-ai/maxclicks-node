@@ -1,6 +1,6 @@
 import type { HttpClient } from '../core/HttpClient'
 import { fetchFirstPage, Page, type PageFetcher } from '../pagination'
-import type { Deleted, ListParams, Workflow, WorkflowRun } from '../types'
+import type { ListParams, RequestOptions, Workflow, WorkflowRun } from '../types'
 
 /** Trigger workflows through their incoming-webhook steps and inspect workflows and their runs. */
 export class WorkflowsResource {
@@ -9,12 +9,16 @@ export class WorkflowsResource {
   /**
    * Starts a workflow run from an incoming-webhook step. `body` is validated
    * server-side against the step's configured JSON schema.
+   *
+   * Accepts `options.idempotencyKey`, the recommended way to make a redelivered
+   * trigger start a single run.
    */
-  trigger(workflowStepReference: string, body: unknown = {}): Promise<void> {
+  trigger(workflowStepReference: string, body: unknown = {}, options: RequestOptions = {}): Promise<void> {
     return this.http.requestVoid({
       method: 'POST',
       path: `/workflows/${encodeURIComponent(workflowStepReference)}`,
       body,
+      idempotencyKey: options.idempotencyKey,
     })
   }
 
@@ -28,11 +32,6 @@ export class WorkflowsResource {
   /** Fetches a workflow by id. */
   get(id: string): Promise<Workflow> {
     return this.http.request<Workflow>({ method: 'GET', path: `/workflows/${encodeURIComponent(id)}` })
-  }
-
-  /** Permanently deletes a workflow. */
-  delete(id: string): Promise<Deleted> {
-    return this.http.request<Deleted>({ method: 'DELETE', path: `/workflows/${encodeURIComponent(id)}` })
   }
 
   /** Pauses a workflow so no new runs start; in-flight runs finish. Returns the updated workflow. */

@@ -41,7 +41,9 @@ jobs:
           echo "Canary version: $VERSION"
 
       - name: Set canary version
-        run: npm version ${{ steps.canary.outputs.version }} --no-git-tag-version
+        run: |
+          npm version ${{ steps.canary.outputs.version }} --no-git-tag-version
+          npm run sync.version
 
       - name: Publish to npm (canary tag)
         run: npm publish --tag canary

@@ -2,6 +2,7 @@ import type { HttpClient } from '../core/HttpClient'
 import { fetchFirstPage, Page, type PageFetcher } from '../pagination'
 import type {
   Deleted,
+  RequestOptions,
   Suppression,
   SuppressionBatchCreateResult,
   SuppressionBatchDeleteResult,
@@ -29,14 +30,6 @@ export class SuppressionsResource {
     return fetchFirstPage(fetcher, params)
   }
 
-  /** Fetches a suppression by id. */
-  get(id: string): Promise<Suppression> {
-    return this.http.request<Suppression>({
-      method: 'GET',
-      path: `/contacts/suppressions/${encodeURIComponent(id)}`,
-    })
-  }
-
   /** Removes a suppression by id, re-allowing communication to that identifier. */
   delete(id: string): Promise<Deleted> {
     return this.http.request<Deleted>({
@@ -45,21 +38,29 @@ export class SuppressionsResource {
     })
   }
 
-  /** Bulk-creates 1 to 100 suppressions; each item is processed independently. */
-  batchCreate(suppressions: SuppressionInput[]): Promise<SuppressionBatchCreateResult> {
+  /**
+   * Bulk-creates 1 to 100 suppressions; each item is processed independently.
+   * Accepts `options.idempotencyKey`.
+   */
+  batchCreate(suppressions: SuppressionInput[], options: RequestOptions = {}): Promise<SuppressionBatchCreateResult> {
     return this.http.request<SuppressionBatchCreateResult>({
       method: 'POST',
       path: '/contacts/suppressions/batch',
       body: { suppressions },
+      idempotencyKey: options.idempotencyKey,
     })
   }
 
-  /** Bulk-removes 1 to 100 suppressions by id; each id is gated like the single delete. */
-  batchDelete(ids: string[]): Promise<SuppressionBatchDeleteResult> {
+  /**
+   * Bulk-removes 1 to 100 suppressions by id; each id is gated like the single delete.
+   * Accepts `options.idempotencyKey`.
+   */
+  batchDelete(ids: string[], options: RequestOptions = {}): Promise<SuppressionBatchDeleteResult> {
     return this.http.request<SuppressionBatchDeleteResult>({
       method: 'POST',
       path: '/contacts/suppressions/batch-remove',
       body: { ids },
+      idempotencyKey: options.idempotencyKey,
     })
   }
 }

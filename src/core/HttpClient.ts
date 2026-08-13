@@ -26,6 +26,10 @@ export interface RequestArgs {
   auth?: boolean
   /** Non-2xx statuses to treat as success (for example `422` on a batch abort). */
   acceptStatuses?: readonly number[]
+  /** Sent as the `Idempotency-Key` header. Also marks the request as safe to retry. */
+  idempotencyKey?: string | null
+  /** Extra headers for this request only, merged over the computed ones. */
+  headers?: Record<string, string>
 }
 
 /** Test seams: deterministic time, jitter, and sleep. Not part of the public API. */
@@ -42,7 +46,17 @@ interface ParsedResponse {
   url: string
 }
 
+const IDEMPOTENCY_KEY_HEADER = 'Idempotency-Key'
+
 const defaultSleep = (milliseconds: number): Promise<void> => new Promise(resolve => setTimeout(resolve, milliseconds))
+
+function resolveIdempotencyKey(args: RequestArgs): string | null {
+  if (args.idempotencyKey) return args.idempotencyKey
+  const fromHeaders = Object.entries(args.headers ?? {}).find(
+    ([key]) => key.toLowerCase() === IDEMPOTENCY_KEY_HEADER.toLowerCase()
+  )
+  return fromHeaders && fromHeaders[1] ? fromHeaders[1] : null
+}
 
 function decodeWarningHeader(value: string | undefined): string[] | null {
   if (!value) return null
@@ -152,6 +166,13 @@ export class HttpClient {
     }
     if (args.formBody) headers['Content-Type'] = 'application/x-www-form-urlencoded'
     else if (args.body !== undefined) headers['Content-Type'] = 'application/json'
+    if (args.headers) Object.assign(headers, args.headers)
+    const idempotencyKey = resolveIdempotencyKey(args)
+    if (idempotencyKey) {
+      for (const key of Object.keys(headers))
+        if (key.toLowerCase() === IDEMPOTENCY_KEY_HEADER.toLowerCase()) delete headers[key]
+      headers[IDEMPOTENCY_KEY_HEADER] = idempotencyKey
+    }
     return headers
   }
 
@@ -185,7 +206,7 @@ export class HttpClient {
       } catch (error) {
         clearTimeout(timer)
         const transportError = this.classifyTransportError(error)
-        if (attempt < this.config.maxRetries) {
+        if (this.canRetry(args, null) && attempt < this.config.maxRetries) {
           await this.sleep(backoffDelayMs(attempt, this.random))
           attempt += 1
           continue
@@ -203,7 +224,7 @@ export class HttpClient {
         headers: parsed.headers,
         nowMs: this.now(),
       })
-      if (isRetryableStatus(parsed.status) && attempt < this.config.maxRetries) {
+      if (isRetryableStatus(parsed.status) && this.canRetry(args, parsed.status) && attempt < this.config.maxRetries) {
         const retryAfterMs = apiError instanceof MaxclicksRateLimitError ? apiError.retryAfterMs : null
         await this.sleep(retryAfterMs ?? backoffDelayMs(attempt, this.random))
         attempt += 1
@@ -211,6 +232,23 @@ export class HttpClient {
       }
       throw apiError
     }
+  }
+
+  /**
+   * A repeated write can duplicate a customer-visible side effect (a second email,
+   * a second record), so a write is only retried when the server can deduplicate
+   * it through an `Idempotency-Key`. Reads are always safe.
+   *
+   * `status` is the status the server answered with, or `null` when no response
+   * was received (timeout or transport failure). A `429` is the one status that
+   * proves the request was rejected before it was processed (the API documents a
+   * rejected request as having done nothing), so it is retried even without a
+   * key. Timeouts, transport failures and `5xx` prove nothing: the write may
+   * already have been committed, so they are not retried without one.
+   */
+  private canRetry(args: RequestArgs, status: number | null): boolean {
+    if (status === 429) return true
+    return args.method === 'GET' || resolveIdempotencyKey(args) !== null
   }
 
   private async parseResponse(response: Response): Promise<ParsedResponse> {

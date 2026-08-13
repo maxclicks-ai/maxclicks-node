@@ -26,6 +26,7 @@ jobs:
           TIMESTAMP=$(date +%Y%m%d%H%M%S)
           VERSION="${BASE}-dev.${TIMESTAMP}"
           npm version $VERSION --no-git-tag-version
+          npm run sync.version
           echo "package=$PACKAGE" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 

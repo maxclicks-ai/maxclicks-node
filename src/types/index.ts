@@ -25,6 +25,21 @@ export interface ListParams {
   offset?: number
 }
 
+/**
+ * Per-call options accepted by the write operations the API documents as
+ * idempotency-aware: `records.create`, `records.upsert`, `suppressions.batchCreate`,
+ * `suppressions.batchDelete`, `templates.send`, `broadcasts.send`, and `workflows.trigger`.
+ */
+export interface RequestOptions {
+  /**
+   * A client-generated key sent as the `Idempotency-Key` header, unique per
+   * logical operation. The first request with a key executes; a repeat of the
+   * same key replays the original outcome instead of writing twice. A key also
+   * makes the call retryable: without one the SDK does not retry a write.
+   */
+  idempotencyKey?: string
+}
+
 // ---------------------------------------------------------------------------
 // Meta (/me)
 // ---------------------------------------------------------------------------
@@ -471,50 +486,6 @@ export interface RedirectResult {
 }
 
 // ---------------------------------------------------------------------------
-// schemas additions
-// ---------------------------------------------------------------------------
-
-/** Parameters for creating a schema. `type` and `slug` are immutable once set. */
-export interface SchemaCreateParams {
-  /** The schema type: `contact`, `object`, or `event`. */
-  type: SchemaType
-  /** Singular display name, unique within the space. */
-  name: string
-  /** Plural display name. */
-  namePlural: string
-  /** URL-safe slug, unique within the space. */
-  slug: string
-  /** Optional human-readable description. */
-  description?: string | null
-}
-
-/** Parameters for updating a schema. At least one field must be provided; `type` and `slug` are immutable. */
-export interface SchemaUpdateParams {
-  /** New singular display name. */
-  name?: string
-  /** New plural display name. */
-  namePlural?: string
-  /** New description; pass `null` to clear it. */
-  description?: string | null
-}
-
-// ---------------------------------------------------------------------------
-// attributes additions
-// ---------------------------------------------------------------------------
-
-/** Input to create a custom attribute. Provide exactly one of `definition` (stored) or `requirements` (evaluated). */
-export interface AttributeCreateParams {
-  /** 1-100 chars, no spaces or quotes, not a reserved base key. */
-  key: string
-  label: string
-  description?: string | null
-  /** A stored attribute definition. Cannot be `evaluated`; use `requirements` for that. */
-  definition?: StoredAttributeDefinition
-  /** Natural-language prompt: AI generates an evaluated attribute definition from it (billed, `ai` rate bucket). */
-  requirements?: string
-}
-
-// ---------------------------------------------------------------------------
 // suppressions additions
 // ---------------------------------------------------------------------------
 
@@ -600,11 +571,6 @@ export type TemplateFrom =
 /** A path into a data payload, as property-key segments. */
 export type DataPath = string[]
 
-/** Which evaluated attributes to compute before a record-typed data property is consumed, nested recursively. */
-export interface AttributeExpansions {
-  [evaluatedAttributeKey: string]: AttributeExpansions
-}
-
 /** One property of a data representation: a `record` from a schema or a `json` value described by a JSON schema. */
 export type DataRepresentationProperty =
   | { key: string; type: 'record'; schema: string; isArray?: boolean; description?: string | null }
@@ -614,13 +580,6 @@ export type DataRepresentationProperty =
 export interface TemplateContent {
   subject: string | null
   body: string | null
-}
-
-/** Raw editor content used to create or update a template. */
-export interface TemplateContentInput {
-  bodyFormat: 'mjml' | 'html'
-  subject: string
-  body: string
 }
 
 /** A stored message template with its content, sender, recipient path, and expected data representation. */
@@ -640,32 +599,6 @@ export interface Template {
   communicationTopicId: string | null
 }
 
-/** Parameters for creating a template with raw editor content. */
-export interface TemplateCreateParams {
-  name?: string | null
-  description?: string | null
-  transactional: boolean
-  content: TemplateContentInput
-  from?: TemplateFrom
-  recipientDataPath: DataPath
-  communicationTopicId?: string | null
-  attributeExpansions?: AttributeExpansions
-  expectedDataRepresentation: DataRepresentationProperty[]
-}
-
-/** Parameters for updating a template. At least one field must be provided. */
-export interface TemplateUpdateParams {
-  name?: string | null
-  description?: string | null
-  transactional?: boolean
-  content?: TemplateContentInput
-  from?: TemplateFrom
-  recipientDataPath?: DataPath
-  communicationTopicId?: string | null
-  attributeExpansions?: AttributeExpansions
-  expectedDataRepresentation?: DataRepresentationProperty[]
-}
-
 // ---------------------------------------------------------------------------
 // broadcasts additions
 // ---------------------------------------------------------------------------
@@ -680,21 +613,10 @@ export type BroadcastAudience =
   | { type: 'custom filter'; requirements: string; conditionDescriptionMarkdown: string }
 
 /**
- * The audience to create or update a broadcast with. A `custom filter` audience
- * can only be set via `broadcasts.generateAudience`, never directly through
- * create/update.
+ * The audience to update a broadcast with. A `custom filter` audience cannot be
+ * set through the API, only read back.
  */
 export type BroadcastAudienceInput = { type: 'all' } | { type: 'segment'; segmentId: string }
-
-/** Raw editor content used to create a broadcast, no rich-editor structure. */
-export interface BroadcastContentInput {
-  bodyFormat: 'mjml' | 'html'
-  subject: string
-  body: string
-  transactional?: boolean
-  from?: TemplateFrom
-  communicationTopicId?: string | null
-}
 
 /** A broadcast: an audience, an owned copy of email content, and a scheduling state. */
 export interface Broadcast {
@@ -715,17 +637,6 @@ export interface Broadcast {
   hasContent: boolean
 }
 
-/** Parameters for creating a broadcast. */
-export interface BroadcastCreateParams {
-  name?: string | null
-  description?: string | null
-  /** A contact schema id or slug. */
-  contactSchema: string
-  scheduledFor?: string | null
-  audience?: BroadcastAudienceInput
-  content?: BroadcastContentInput
-}
-
 /** Parameters for updating a broadcast. At least one field must be provided. */
 export interface BroadcastUpdateParams {
   name?: string | null
@@ -737,23 +648,6 @@ export interface BroadcastUpdateParams {
 /** Parameters for sending a broadcast. An empty or omitted body sends now; a `scheduledFor` schedules for later. */
 export interface BroadcastSendParams {
   scheduledFor?: string
-}
-
-/** Parameters for generating a custom-filter audience from a natural-language prompt. */
-export interface BroadcastAudienceGenerateParams {
-  /** Natural-language description of the audience filter criteria. */
-  requirements: string
-}
-
-/** The generated custom-filter audience and its live matching count. */
-export interface BroadcastAudienceGenerateResult {
-  audience: {
-    type: 'custom filter'
-    requirements: string
-    conditionDescriptionMarkdown: string
-  }
-  /** A live count at generation time, not kept in sync afterward. */
-  matchingCount: number
 }
 
 /** One reduced run record per recipient contact of a broadcast. */
@@ -837,62 +731,6 @@ export interface WorkflowRun {
 }
 
 // ---------------------------------------------------------------------------
-// imports additions
-// ---------------------------------------------------------------------------
-
-/** The lifecycle status of a bulk import. */
-export type ImportStatus = 'pending' | 'running' | 'succeeded' | 'partial' | 'failed' | 'canceled'
-
-/** One sampled failed row from an import, for surfacing example errors without the full log. */
-export interface ImportFailureSample {
-  /** 1-based row number in the source CSV. */
-  rowNumber: number
-  /** The row's identifier value (email/externalId/etc.), or `null` when none could be read. */
-  identifier: string | null
-  /** Human-readable reason the row failed. */
-  reason: string
-}
-
-/** A bulk import of contact or object records from an uploaded CSV file. */
-export interface Import {
-  id: string
-  createdAt: string
-  schemaId: string
-  schemaSlug: string
-  fileName: string
-  /** Size of the source file in bytes. */
-  byteSize: number
-  status: ImportStatus
-  /** Set when the whole import failed; `null` otherwise. */
-  failureReason: string | null
-  /** Total number of data rows detected in the file. */
-  rowCount: number
-  successCount: number
-  failureCount: number
-  /** Count of individual fields skipped (unknown/uneditable columns) across all rows. */
-  skippedFieldCount: number
-  failureSamples: ImportFailureSample[]
-  /** When set, points at `imports.downloadFailureLog`, never a raw storage URL; `null` when there is no failure log. */
-  failureLogUrl: string | null
-  startedAt: string | null
-  finishedAt: string | null
-}
-
-/** Parameters for starting an import from an already-uploaded CSV file. */
-export interface ImportCreateParams {
-  /** URL of an already-uploaded CSV file (a reference, not inline records or raw CSV text). */
-  fileUrl: string
-  /** File size in bytes. Rejected above 50 MB. */
-  byteSize: number
-  /** Original file name to record for the import. */
-  fileName?: string | null
-  /** Tags applied to every imported record. */
-  defaultTags?: string[]
-  /** Communication channels every imported contact is subscribed to. */
-  defaultSubscriptions?: CommunicationChannel[]
-}
-
-// ---------------------------------------------------------------------------
 // domains additions
 // ---------------------------------------------------------------------------
 
@@ -929,16 +767,8 @@ export interface Domain {
   verificationStarted: boolean
   /** Whether the domain is verified and ready for sending. */
   verifiedForSending: boolean
-  /** Live-checked DNS records. Present on get, create, and verify; omitted on list. */
+  /** Live-checked DNS records. Present on get; omitted on list. */
   records?: DnsRecord[]
-}
-
-/** Parameters for adding a sending domain. */
-export interface DomainCreateParams {
-  /** The domain name, e.g. example.com. */
-  name: string
-  /** The bounce-handling subdomain label (defaults to `send`). */
-  customReturnPath?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -963,30 +793,6 @@ export interface Sender {
   domainId: string
   /** The derived sending address, `code`@domain. */
   email: string
-}
-
-/** Parameters for creating a sender profile. */
-export interface SenderCreateParams {
-  /** The sender profile's display name. */
-  name: string
-  /** The email local part (for example `support`). */
-  code: string
-  /** The id of the verified domain to send from. */
-  domainId: string
-  /** An optional description, or null to leave empty. */
-  description?: string | null
-}
-
-/** Parameters for updating a sender profile. At least one field must be provided. */
-export interface SenderUpdateParams {
-  /** A new display name. */
-  name?: string
-  /** A new email local part. */
-  code?: string
-  /** A new verified domain id. */
-  domainId?: string
-  /** A new description, or null to clear it. */
-  description?: string | null
 }
 
 // ---------------------------------------------------------------------------
@@ -1027,29 +833,6 @@ export interface Topic {
   private: boolean
 }
 
-/** Fields for creating a communication topic. `channel` defaults to `email`. */
-export interface TopicCreateParams {
-  name: string
-  description?: string | null
-  color?: BadgeColor
-  channel?: CommunicationChannel
-  private?: boolean
-}
-
-/** Fields for updating a communication topic. At least one must be provided; `channel` is immutable. */
-export interface TopicUpdateParams {
-  name?: string
-  description?: string | null
-  color?: BadgeColor
-  private?: boolean
-}
-
-/** Options for deleting a communication topic. */
-export interface TopicDeleteParams {
-  /** Bypass the in-use check (topic referenced by a form or email template). */
-  force?: boolean
-}
-
 // ---------------------------------------------------------------------------
 // Segments
 // ---------------------------------------------------------------------------
@@ -1083,47 +866,8 @@ export interface SegmentCreateParams {
   requirements: string
 }
 
-/** Parameters for updating a segment. Supplying `requirements` regenerates the condition (slow, billed). At least one field is required. */
-export interface SegmentUpdateParams {
-  name?: string
-  description?: string | null
-  requirements?: string
-}
-
 /** The live matching contact count for a segment and the schema's total contact count. */
 export interface SegmentCount {
   count: number
   total: number
-}
-
-// ---------------------------------------------------------------------------
-// apiKeys additions
-// ---------------------------------------------------------------------------
-
-/** An API key belonging to a space. Only the masked `keyDisplay` preview is ever returned after creation. */
-export interface ApiKey {
-  /** The API key id. */
-  id: string
-  /** When the key was created (ISO 8601). */
-  createdAt: string
-  /** Human-readable label, or `null` if unnamed. */
-  name: string | null
-  /** A masked preview of the key, e.g. `max_...ab12`. */
-  keyDisplay: string
-  /** The space the key is bound to, or `null`. */
-  spaceId: string | null
-  /** The id of the API key used to create this key, or `null`. */
-  createdViaApiKeyId: string | null
-}
-
-/** Parameters for creating an API key. */
-export interface ApiKeyCreateParams {
-  /** Human-readable label for the key. Pass `null` or omit to leave it unnamed. */
-  name?: string | null
-}
-
-/** A newly created API key including its plaintext value. The `key` is shown exactly once and cannot be retrieved again. */
-export interface ApiKeyWithSecret extends ApiKey {
-  /** The plaintext API key. Shown exactly once on creation, so save it immediately. */
-  key: string
 }

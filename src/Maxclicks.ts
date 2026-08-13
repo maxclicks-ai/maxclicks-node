@@ -1,14 +1,12 @@
 import { HttpClient, type HttpClientInternals } from './core/HttpClient'
 import { type MaxclicksOptions, resolveConfig } from './core/MaxclicksConfig'
 import {
-  ApiKeysResource,
   AttributesResource,
   BroadcastsResource,
   DomainsResource,
   EmailsResource,
   EventsResource,
   FormsResource,
-  ImportsResource,
   RecordsResource,
   SchemasResource,
   SegmentsResource,
@@ -40,8 +38,6 @@ export class Maxclicks {
   readonly attributes: AttributesResource
   /** Contact and object record CRUD. */
   readonly records: RecordsResource
-  /** Bulk-import records into a schema and track import jobs. */
-  readonly imports: ImportsResource
   /** Create and manage contact segments (natural-language audience filters). */
   readonly segments: SegmentsResource
   /** Email suppression list management (admin key). */
@@ -50,7 +46,7 @@ export class Maxclicks {
   readonly events: EventsResource
   /** Send stored templates. */
   readonly templates: TemplatesResource
-  /** Create, schedule, send, and measure broadcasts. */
+  /** Schedule, send, and measure broadcasts. */
   readonly broadcasts: BroadcastsResource
   /** Manage outgoing webhooks. */
   readonly webhooks: WebhooksResource
@@ -60,14 +56,12 @@ export class Maxclicks {
   readonly forms: FormsResource
   /** Email recipient actions (one-click unsubscribe). */
   readonly emails: EmailsResource
-  /** Register and verify sending domains. */
+  /** Read access to the space's sending domains. */
   readonly domains: DomainsResource
-  /** Manage sender profiles. */
+  /** Read access to the space's sender profiles. */
   readonly senders: SendersResource
-  /** Manage communication topics. */
+  /** Read access to the space's communication topics. */
   readonly topics: TopicsResource
-  /** Manage the space's API keys. Requires an admin key. */
-  readonly apiKeys: ApiKeysResource
 
   private readonly http: HttpClient
 
@@ -83,7 +77,6 @@ export class Maxclicks {
     this.schemas = new SchemasResource(this.http)
     this.attributes = new AttributesResource(this.http)
     this.records = new RecordsResource(this.http)
-    this.imports = new ImportsResource(this.http)
     this.segments = new SegmentsResource(this.http)
     this.suppressions = new SuppressionsResource(this.http)
     this.events = new EventsResource(this.http)
@@ -96,7 +89,6 @@ export class Maxclicks {
     this.domains = new DomainsResource(this.http)
     this.senders = new SendersResource(this.http)
     this.topics = new TopicsResource(this.http)
-    this.apiKeys = new ApiKeysResource(this.http)
   }
 
   /** Identifies the calling API key: the key, its owner, the bound space, and the caller's role. */

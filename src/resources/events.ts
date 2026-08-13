@@ -52,9 +52,4 @@ export class EventsResource {
       warnings: page.warnings,
     }
   }
-
-  /** Fetches one previously-fired event by its platform id. */
-  get(id: string): Promise<Event> {
-    return this.http.request<Event>({ method: 'GET', path: `/events/${encodeURIComponent(id)}` })
-  }
 }

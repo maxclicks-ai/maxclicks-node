@@ -1,14 +1,6 @@
 import type { HttpClient } from '../core/HttpClient'
 import { fetchFirstPage, Page, type PageFetcher } from '../pagination'
-import type {
-  ContactRecord,
-  Deleted,
-  ListParams,
-  Segment,
-  SegmentCount,
-  SegmentCreateParams,
-  SegmentUpdateParams,
-} from '../types'
+import type { ContactRecord, Deleted, ListParams, Segment, SegmentCount, SegmentCreateParams } from '../types'
 
 /** Generate and manage AI-defined contact filters (segments). */
 export class SegmentsResource {
@@ -29,11 +21,6 @@ export class SegmentsResource {
   /** Fetches a segment by id. */
   get(id: string): Promise<Segment> {
     return this.http.request<Segment>({ method: 'GET', path: `/segments/${encodeURIComponent(id)}` })
-  }
-
-  /** Updates a segment's name/description, or regenerates the condition when `requirements` is supplied (slow, billed). */
-  update(id: string, params: SegmentUpdateParams): Promise<Segment> {
-    return this.http.request<Segment>({ method: 'PATCH', path: `/segments/${encodeURIComponent(id)}`, body: params })
   }
 
   /** Permanently deletes a segment. */

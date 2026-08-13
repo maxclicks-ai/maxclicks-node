@@ -2,18 +2,15 @@ import type { HttpClient } from '../core/HttpClient'
 import { fetchFirstPage, Page, type PageFetcher } from '../pagination'
 import type {
   Broadcast,
-  BroadcastAudienceGenerateParams,
-  BroadcastAudienceGenerateResult,
-  BroadcastCreateParams,
   BroadcastMetrics,
   BroadcastRun,
   BroadcastSendParams,
   BroadcastUpdateParams,
-  Deleted,
   ListParams,
+  RequestOptions,
 } from '../types'
 
-/** Create, schedule, send, and measure broadcasts. */
+/** Schedule, send, and measure broadcasts. */
 export class BroadcastsResource {
   constructor(private readonly http: HttpClient) {}
 
@@ -22,11 +19,6 @@ export class BroadcastsResource {
     const fetcher: PageFetcher<Broadcast> = ({ limit, offset }) =>
       this.http.requestPage<Broadcast>({ method: 'GET', path: '/broadcasts', query: { limit, offset } })
     return fetchFirstPage(fetcher, params)
-  }
-
-  /** Creates a broadcast with an audience and optional inline raw email content. */
-  create(params: BroadcastCreateParams): Promise<Broadcast> {
-    return this.http.request<Broadcast>({ method: 'POST', path: '/broadcasts', body: params })
   }
 
   /** Fetches a broadcast by id. */
@@ -43,32 +35,20 @@ export class BroadcastsResource {
     })
   }
 
-  /** Permanently deletes a broadcast, cascading its runs. */
-  delete(id: string): Promise<Deleted> {
-    return this.http.request<Deleted>({ method: 'DELETE', path: `/broadcasts/${encodeURIComponent(id)}` })
-  }
-
   /**
    * Sends a broadcast. Moves it to `send now`, or `send at` when `scheduledFor`
    * is given. Sending itself is asynchronous.
+   *
+   * Accepts `options.idempotencyKey`, the only way to make a retried send safe:
+   * without a key a timed-out send is never repeated by the SDK, because the
+   * broadcast may already have started going out.
    */
-  send(id: string, params: BroadcastSendParams = {}): Promise<Broadcast> {
+  send(id: string, params: BroadcastSendParams = {}, options: RequestOptions = {}): Promise<Broadcast> {
     return this.http.request<Broadcast>({
       method: 'POST',
       path: `/broadcasts/${encodeURIComponent(id)}/send`,
       body: params,
-    })
-  }
-
-  /**
-   * Generates and persists a `custom filter` audience from a natural-language
-   * `requirements` prompt. Rejected once sending has started.
-   */
-  generateAudience(id: string, params: BroadcastAudienceGenerateParams): Promise<BroadcastAudienceGenerateResult> {
-    return this.http.request<BroadcastAudienceGenerateResult>({
-      method: 'POST',
-      path: `/broadcasts/${encodeURIComponent(id)}/audience/generate`,
-      body: params,
+      idempotencyKey: options.idempotencyKey,
     })
   }
 

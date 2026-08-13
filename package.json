@@ -24,6 +24,7 @@
   "sideEffects": false,
   "files": [
     "dist",
+    "src",
     "README.md",
     "LICENSE"
   ],
@@ -38,7 +39,9 @@
     "publish:canary": "node scripts/publish-canary.js",
     "publish:stable": "node scripts/publish-stable.js",
     "unpublish": "node scripts/unpublish.js",
-    "prepublishOnly": "npm run build",
+    "check.version": "node scripts/check-version.js",
+    "sync.version": "node scripts/sync-version.js",
+    "prepublishOnly": "npm run check.version && npm run build",
     "prepare": "lefthook install"
   },
   "keywords": [
@@ -54,7 +57,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/maxclicks-ai/maxclicks-node"
+    "url": "git+https://github.com/maxclicks-ai/maxclicks-node.git"
   },
   "homepage": "https://github.com/maxclicks-ai/maxclicks-node#readme",
   "bugs": {

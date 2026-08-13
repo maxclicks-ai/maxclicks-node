@@ -1,26 +1,41 @@
 import type { HttpClient } from '../core/HttpClient'
 import { fetchFirstPage, Page, type PageFetcher } from '../pagination'
-import type { AuditTrailEntry, AuditTrailListParams, Deleted, MaxclicksRecord, RecordInput } from '../types'
+import type {
+  AuditTrailEntry,
+  AuditTrailListParams,
+  Deleted,
+  MaxclicksRecord,
+  RecordInput,
+  RequestOptions,
+} from '../types'
 
 /** Create, read, update, and delete contact and object records within a schema. */
 export class RecordsResource {
   constructor(private readonly http: HttpClient) {}
 
-  /** Strictly creates a record (never updates an existing one). Any input `id` is ignored. */
-  create(schema: string, input: RecordInput): Promise<MaxclicksRecord> {
+  /**
+   * Strictly creates a record (never updates an existing one). Any input `id` is ignored.
+   * Accepts `options.idempotencyKey` so a retried create cannot duplicate the record.
+   */
+  create(schema: string, input: RecordInput, options: RequestOptions = {}): Promise<MaxclicksRecord> {
     return this.http.request<MaxclicksRecord>({
       method: 'POST',
       path: `/schemas/${encodeURIComponent(schema)}/records`,
       body: input,
+      idempotencyKey: options.idempotencyKey,
     })
   }
 
-  /** Creates or updates a record by identity (contact: id/userId/email/phone; object: id/externalId). */
-  upsert(schema: string, input: RecordInput): Promise<MaxclicksRecord> {
+  /**
+   * Creates or updates a record by identity (contact: id/userId/email/phone; object: id/externalId).
+   * Accepts `options.idempotencyKey`.
+   */
+  upsert(schema: string, input: RecordInput, options: RequestOptions = {}): Promise<MaxclicksRecord> {
     return this.http.request<MaxclicksRecord>({
       method: 'POST',
       path: `/schemas/${encodeURIComponent(schema)}/records/upsert`,
       body: input,
+      idempotencyKey: options.idempotencyKey,
     })
   }
 
