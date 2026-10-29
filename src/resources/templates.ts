@@ -23,16 +23,16 @@ export class TemplatesResource {
    * synchronously. A genuine send failure resolves with `status: 'failed'` and a
    * generic `error`, not a thrown error. Any warnings are delivered via the `onWarning` callback.
    *
-   * Accepts `options.idempotencyKey`, the only way to make a retried send safe:
-   * without a key a timed-out send is never repeated by the SDK, because the
-   * email may already be on its way.
+   * The API requires an idempotency key, so one is generated when none is given; the SDK can then retry a
+   * timed-out send without sending twice. Pass your own `options.idempotencyKey` to retry safely across
+   * processes, for example from a job queue.
    */
   send(templateId: string, params: TemplateSendParams, options: RequestOptions = {}): Promise<TemplateSendResponse> {
     return this.http.request<TemplateSendResponse>({
       method: 'POST',
       path: `/templates/${encodeURIComponent(templateId)}/send`,
       body: params,
-      idempotencyKey: options.idempotencyKey,
+      idempotencyKey: options.idempotencyKey || globalThis.crypto.randomUUID(),
     })
   }
 }

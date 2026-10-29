@@ -5,6 +5,7 @@ import {
   BroadcastsResource,
   DomainsResource,
   EmailsResource,
+  EventIdentitiesResource,
   EventsResource,
   FormsResource,
   RecordsResource,
@@ -25,7 +26,7 @@ import type { Me } from './types'
  * ```ts
  * import { Maxclicks } from 'maxclicks'
  *
- * const mc = new Maxclicks('sk_live_...')
+ * const mc = new Maxclicks('max_...')
  * const me = await mc.me()
  * const contact = await mc.records.upsert('students', { email: 'a@b.com', firstName: 'Ada' })
  * for await (const record of await mc.records.list('students')) console.log(record.id)
@@ -42,8 +43,10 @@ export class Maxclicks {
   readonly segments: SegmentsResource
   /** Email suppression list management (admin key). */
   readonly suppressions: SuppressionsResource
-  /** Fire and read trigger events. */
+  /** Accept events, read their readiness, and read event history. */
   readonly events: EventsResource
+  /** Link anonymous browser identities to contacts, from your server. */
+  readonly eventIdentities: EventIdentitiesResource
   /** Send stored templates. */
   readonly templates: TemplatesResource
   /** Schedule, send, and measure broadcasts. */
@@ -80,6 +83,7 @@ export class Maxclicks {
     this.segments = new SegmentsResource(this.http)
     this.suppressions = new SuppressionsResource(this.http)
     this.events = new EventsResource(this.http)
+    this.eventIdentities = new EventIdentitiesResource(this.http)
     this.templates = new TemplatesResource(this.http)
     this.broadcasts = new BroadcastsResource(this.http)
     this.webhooks = new WebhooksResource(this.http)

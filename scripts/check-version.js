@@ -3,7 +3,7 @@
  *
  * VERSION is stamped into the `User-Agent` and `X-Maxclicks-Client` headers of
  * every request, so a build whose VERSION drifted from the published version
- * reports a release that does not exist. This runs as part of `prepublishOnly`;
+ * reports a release that does not exist. This runs as part of `prepack`;
  * `npm test` asserts the same thing.
  *
  * Prerelease publishes (`npm run publish:canary`, `npm run publish:dev`) set the

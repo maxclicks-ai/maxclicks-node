@@ -7,6 +7,7 @@ import type {
   EventInput,
   EventListParams,
   EventPage,
+  EventStatus,
   FireResult,
 } from '../types'
 
@@ -14,7 +15,7 @@ import type {
 export class EventsResource {
   constructor(private readonly http: HttpClient) {}
 
-  /** Fires a single event of the given event schema (async fire-and-forget). */
+  /** Accepts one event. Acceptance is durable; read `status` with the returned `id` for its readiness. */
   fire(schema: string, input: EventInput): Promise<FireResult> {
     return this.http.request<FireResult>({
       method: 'POST',
@@ -33,7 +34,15 @@ export class EventsResource {
     })
   }
 
-  /** Reads an event schema's history, newest first. Cursor-paginated: follow `pagination.nextCursor`. */
+  /** Reads the current readiness of one accepted event by the `id` from its receipt. */
+  status(schema: string, id: string): Promise<EventStatus> {
+    return this.http.request<EventStatus>({
+      method: 'GET',
+      path: `/events/${encodeURIComponent(schema)}/${encodeURIComponent(id)}/status`,
+    })
+  }
+
+  /** Reads an event schema's ready history, newest first. Cursor-paginated: follow `pagination.nextCursor`. */
   async list(params: EventListParams): Promise<EventPage> {
     const page = await this.http.requestPage<Event>({
       method: 'GET',

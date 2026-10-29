@@ -1,6 +1,6 @@
 import type { HttpClient } from '../core/HttpClient'
 import { fetchFirstPage, Page, type PageFetcher } from '../pagination'
-import type { ListParams, RequestOptions, Workflow, WorkflowRun } from '../types'
+import type { ListParams, RequestOptions, Workflow, WorkflowRun, WorkflowRunGetParams } from '../types'
 
 /** Trigger workflows through their incoming-webhook steps and inspect workflows and their runs. */
 export class WorkflowsResource {
@@ -35,13 +35,21 @@ export class WorkflowsResource {
   }
 
   /** Pauses a workflow so no new runs start; in-flight runs finish. Returns the updated workflow. */
-  pause(id: string): Promise<Workflow> {
-    return this.http.request<Workflow>({ method: 'POST', path: `/workflows/${encodeURIComponent(id)}/pause` })
+  pause(id: string, options: RequestOptions = {}): Promise<Workflow> {
+    return this.http.request<Workflow>({
+      method: 'POST',
+      path: `/workflows/${encodeURIComponent(id)}/pause`,
+      idempotencyKey: options.idempotencyKey,
+    })
   }
 
   /** Unpauses a workflow so new runs can start again. Returns the updated workflow. */
-  unpause(id: string): Promise<Workflow> {
-    return this.http.request<Workflow>({ method: 'POST', path: `/workflows/${encodeURIComponent(id)}/unpause` })
+  unpause(id: string, options: RequestOptions = {}): Promise<Workflow> {
+    return this.http.request<Workflow>({
+      method: 'POST',
+      path: `/workflows/${encodeURIComponent(id)}/unpause`,
+      idempotencyKey: options.idempotencyKey,
+    })
   }
 
   /** Lists a workflow's runs. Paginated. */
@@ -55,11 +63,12 @@ export class WorkflowsResource {
     return fetchFirstPage(fetcher, params)
   }
 
-  /** Fetches a single run of a workflow by run id. */
-  getRun(id: string, runId: string): Promise<WorkflowRun> {
+  /** Fetches a single run with its latest 100 history entries. Pass `historyBefore` to page back. */
+  getRun(id: string, runId: string, params: WorkflowRunGetParams = {}): Promise<WorkflowRun> {
     return this.http.request<WorkflowRun>({
       method: 'GET',
       path: `/workflows/${encodeURIComponent(id)}/runs/${encodeURIComponent(runId)}`,
+      query: { history_before: params.historyBefore },
     })
   }
 }

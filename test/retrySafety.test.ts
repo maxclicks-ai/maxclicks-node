@@ -35,10 +35,21 @@ test('a keyless POST is not retried after a transport error', async () => {
   assert.equal(calls.length, 1)
 })
 
-test('a keyless template send is not retried after a timeout', async () => {
-  const { client, calls } = makeClient(timeout)
+test('a template send without a caller key is retried after a timeout under the same generated key', async () => {
+  const { client, calls } = makeClient((_call, index) => {
+    if (index === 0) return timeout()
+    return { json: { data: { emailId: 'em_1', status: 'sent', error: null } } }
+  })
+  const result = await client.templates.send('tmpl_1', { data: {} })
+  assert.equal(result.status, 'sent')
+  assert.equal(calls.length, 2)
+  assert.ok(calls[0].headers['idempotency-key'])
+  assert.equal(calls[1].headers['idempotency-key'], calls[0].headers['idempotency-key'])
+})
+
+test('a template send that keeps timing out still fails with a timeout', async () => {
+  const { client } = makeClient(timeout)
   await assert.rejects(() => client.templates.send('tmpl_1', { data: {} }), MaxclicksTimeoutError)
-  assert.equal(calls.length, 1)
 })
 
 test('a keyless POST is not retried on 5xx', async () => {
@@ -76,6 +87,15 @@ test('a keyless POST is still retried on 429, which the server answered before d
 
 test('a keyless DELETE is not retried', async () => {
   const { client, calls } = makeClient(serverError)
-  await assert.rejects(() => client.records.delete('students', 'c1'), MaxclicksServerError)
+  await assert.rejects(() => client.webhooks.delete('wh_1'), MaxclicksServerError)
   assert.equal(calls.length, 1)
+})
+
+test('a record deletion is retried on 5xx under the same generated attempt key', async () => {
+  const deletion = { operationId: 'delete:records:abc', status: 'pending', canCancel: false, message: 'In progress.' }
+  const { client, calls } = makeClient([serverError, { status: 202, json: { data: deletion } }])
+  const result = await client.records.delete('students', 'c1')
+  assert.deepEqual(result, deletion)
+  assert.equal(calls.length, 2)
+  assert.equal(calls[1].headers['idempotency-key'], calls[0].headers['idempotency-key'])
 })

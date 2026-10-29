@@ -41,8 +41,9 @@
     "unpublish": "node scripts/unpublish.js",
     "check.version": "node scripts/check-version.js",
     "sync.version": "node scripts/sync-version.js",
-    "prepublishOnly": "npm run check.version && npm run build",
-    "prepare": "lefthook install"
+    "prepack": "npm run check.version && npm run build",
+    "prepublishOnly": "npm run check && npm test",
+    "prepare": "node scripts/prepare.mjs"
   },
   "keywords": [
     "maxclicks",

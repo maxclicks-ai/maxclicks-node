@@ -2,7 +2,7 @@
 
 The official [maxclicks](https://maxclicks.ai) Node.js and TypeScript SDK for the Public API v1.
 
-Manage contacts and objects, fire events, send templates, manage webhooks, trigger workflows, and submit forms, all with full TypeScript types, automatic pagination, typed errors, and built in retries.
+Manage contacts and objects, send events and follow their readiness, send templates, manage webhooks, trigger workflows, and submit forms, all with full TypeScript types, automatic pagination, typed errors, and safe retries.
 
 ## Installation
 
@@ -17,7 +17,7 @@ Requires Node.js 18 or newer. Ships both ESM and CommonJS builds.
 ```ts
 import { Maxclicks } from 'maxclicks'
 
-const mc = new Maxclicks('sk_live_...') // or set MAXCLICKS_API_KEY and call new Maxclicks()
+const mc = new Maxclicks('max_YOUR_API_KEY') // or set MAXCLICKS_API_KEY and call new Maxclicks()
 
 // Who am I?
 const me = await mc.me()
@@ -30,8 +30,9 @@ const contact = await mc.records.upsert('students', {
   tags: ['beta'],
 })
 
-// Fire an event
-await mc.events.fire('purchase-completed', { eventId: 'ord_123', amount: 42 })
+// Send an event, then follow its readiness by the receipt's id
+const receipt = await mc.events.fire('purchase-completed', { eventId: 'ord_123', contactId: contact.id, amount: 42 })
+const status = await mc.events.status('purchase-completed', receipt.id)
 
 // Send a template
 await mc.templates.send(templateId, { data: { contact: { email: 'ada@example.com' } } })
@@ -57,7 +58,7 @@ const mc = new Maxclicks({
 
 ## Errors
 
-Every failure throws a typed subclass of `MaxclicksError`. The happy path returns data directly.
+Request errors throw a typed subclass of `MaxclicksError`. Some operations return failure outcomes in their data: `templates.send()` resolves with `status: 'failed'` and an `error` when a send fails. Batch results can also contain failed items; `events.fireBatch()` returns its structured result even for HTTP 422. Inspect these outcomes as well as catching request errors.
 
 ```ts
 import { MaxclicksError, MaxclicksNotFoundError, MaxclicksRateLimitError } from 'maxclicks'
@@ -75,18 +76,18 @@ try {
 }
 ```
 
-| Error                                                | When                                              |
-| ---------------------------------------------------- | ------------------------------------------------- |
-| `MaxclicksBadRequestError`                           | 400 validation failure                            |
-| `MaxclicksAuthenticationError`                       | 401 missing or invalid API key                    |
-| `MaxclicksPermissionError`                           | 403 insufficient permission or space out of scope |
-| `MaxclicksNotFoundError`                             | 404 resource not found                            |
-| `MaxclicksConflictError`                             | 409 identifier or uniqueness conflict             |
-| `MaxclicksUnprocessableEntityError`                  | 422 (for example a batch abort)                   |
-| `MaxclicksRateLimitError`                            | 429 rate limited (carries `retryAfterMs`)         |
-| `MaxclicksServerError`                               | 5xx server error                                  |
-| `MaxclicksConnectionError` / `MaxclicksTimeoutError` | transport failure or timeout                      |
-| `MaxclicksConfigurationError`                        | client misconfiguration (for example no API key)  |
+| Error                                                | When                                                         |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| `MaxclicksBadRequestError`                           | 400 validation failure                                       |
+| `MaxclicksAuthenticationError`                       | 401 missing or invalid API key                               |
+| `MaxclicksPermissionError`                           | 403 insufficient permission or space out of scope            |
+| `MaxclicksNotFoundError`                             | 404 resource not found                                       |
+| `MaxclicksConflictError`                             | 409 identifier or uniqueness conflict                        |
+| `MaxclicksUnprocessableEntityError`                  | 422 outside operations that return a structured batch result |
+| `MaxclicksRateLimitError`                            | 429 rate limited (carries `retryAfterMs`)                    |
+| `MaxclicksServerError`                               | 5xx server error                                             |
+| `MaxclicksConnectionError` / `MaxclicksTimeoutError` | transport failure or timeout                                 |
+| `MaxclicksConfigurationError`                        | client misconfiguration (for example no API key)             |
 
 The SDK retries with jittered exponential backoff, honoring the `Retry-After` header, but only when a retry cannot duplicate a write:
 
@@ -96,11 +97,11 @@ The SDK retries with jittered exponential backoff, honoring the `Retry-After` he
 | A write carrying an `idempotencyKey` | yes              | yes                                        |
 | A write without a key                | yes              | **no**                                     |
 
-A `429` is answered before the server does any work, so repeating the request duplicates nothing. A timeout or a `5xx` proves nothing: the send or the create may already have happened, so a keyless write fails fast with `MaxclicksTimeoutError`, `MaxclicksConnectionError`, or `MaxclicksServerError` instead of being repeated. Pass an idempotency key to get those retries back.
+A `429` is answered before the server does any work, so repeating the request duplicates nothing. A timeout or a `5xx` proves nothing: the send or the create may already have happened, so a keyless write fails fast with `MaxclicksTimeoutError`, `MaxclicksConnectionError`, or `MaxclicksServerError` instead of being repeated. Pass an idempotency key to get those retries back. `templates.send` and `records.delete` always carry a key, so they are always retried safely.
 
 ## Idempotency
 
-The write operations the API documents as idempotency-aware take a trailing options object with an `idempotencyKey`. The first request with a given key executes; a repeat of the same key replays the original outcome instead of writing twice.
+Every write the API can deduplicate takes a trailing options object with an `idempotencyKey`. The first request with a given key executes; a repeat of the same operation and input with that key replays the original outcome instead of writing twice.
 
 ```ts
 import { randomUUID } from 'node:crypto'
@@ -109,17 +110,17 @@ const key = randomUUID()
 await mc.templates.send('tmpl_01hxyz...', { data: { contact: { email: 'ada@example.com' } } }, { idempotencyKey: key })
 ```
 
-Seven operations accept it, matching the OpenAPI spec exactly:
+The API requires a key for `templates.send` and `records.delete`, so the SDK generates one when you pass none and reuses it for its own retries. Pass your own key when a retry can come from another process, such as a job queue, so the repeat replays the first outcome. A `MaxclicksConflictError` with code `idempotency_outcome_unknown` means the first attempt's outcome could not be confirmed: check what happened before you try again under a new key.
 
-| Operation                                            |
-| ---------------------------------------------------- |
-| `mc.records.create(schema, input, options)`          |
-| `mc.records.upsert(schema, input, options)`          |
-| `mc.suppressions.batchCreate(suppressions, options)` |
-| `mc.suppressions.batchDelete(ids, options)`          |
-| `mc.templates.send(templateId, params, options)`     |
-| `mc.broadcasts.send(id, params, options)`            |
-| `mc.workflows.trigger(reference, body, options)`     |
+| Operations that accept `options.idempotencyKey`                                  |
+| -------------------------------------------------------------------------------- |
+| `records.create`, `records.upsert`, `records.delete` (key generated if omitted)  |
+| `templates.send` (key generated if omitted)                                      |
+| `suppressions.delete`, `suppressions.batchCreate`, `suppressions.batchDelete`    |
+| `segments.create`, `segments.delete`                                             |
+| `broadcasts.update`, `broadcasts.send`                                           |
+| `webhooks.create`, `webhooks.update`, `webhooks.delete`, `webhooks.rotateSecret` |
+| `workflows.trigger`, `workflows.pause`, `workflows.unpause`                      |
 
 Use a key that is unique per logical operation (a UUID per order, per signup, per outgoing email) and reuse it only when retrying that same operation. One constant key shared by every call would make the API treat unrelated calls as replays.
 
@@ -156,51 +157,55 @@ mc.records.upsert(schema, input, options?)      // options: { idempotencyKey? }
 mc.records.list(schema, params?)                 // Page<Record>
 mc.records.get(schema, id)
 mc.records.update(schema, id, input)
-mc.records.delete(schema, id)
+mc.records.delete(schema, id, options?)          // RecordDeletionStatus; runs in the background
+mc.records.getDeletion(operationId)              // RecordDeletionStatus
+mc.records.cancelDeletion(operationId)           // before removal begins
 mc.records.auditTrail(schema, id, params?)       // Page<AuditTrailEntry>
 
 mc.segments.list(params?)                        // Page<Segment>
-mc.segments.create(params)
+mc.segments.create(params, options?)
 mc.segments.get(id)
-mc.segments.delete(id)
+mc.segments.delete(id, options?)
 mc.segments.count(id)                            // { count, total }
 mc.segments.listContacts(id, params?)            // Page<Record>
 
 mc.suppressions.create({ identifier, reason, notes? })  // admin key
-mc.suppressions.delete(id)
+mc.suppressions.delete(id, options?)
 mc.suppressions.list(params?)                    // Page<Suppression>, admin key
-mc.suppressions.batchCreate(inputs, options?)    // admin key, options: { idempotencyKey? }
-mc.suppressions.batchDelete(ids, options?)       // admin key, options: { idempotencyKey? }
+mc.suppressions.batchCreate(inputs, options?)    // admin key
+mc.suppressions.batchDelete(ids, options?)       // admin key
 
-mc.events.fire(schema, input)                    // { accepted }
+mc.events.fire(schema, input)                    // FireResult receipt: { accepted, id, eventId, isDuplicate, readinessAtAcceptance }
 mc.events.fireBatch(schema, events, { onError? })
-mc.events.list(params)                           // Page<Event>, schema required
+mc.events.status(schema, id)                     // EventStatus: current readiness
+mc.events.list(params)                           // ready history, cursor-paginated, schema required
+mc.eventIdentities.identify(input)               // link an anonymous browser identity to a contact
 
 mc.templates.list(params?)                       // Page<Template>
 mc.templates.get(id)
-mc.templates.send(templateId, { data }, options?)  // options: { idempotencyKey? }
+mc.templates.send(templateId, { data }, options?)
 
 mc.broadcasts.list(params?)                      // Page<Broadcast>
 mc.broadcasts.get(id)
-mc.broadcasts.update(id, params)
-mc.broadcasts.send(id, params?, options?)        // options: { idempotencyKey? }
+mc.broadcasts.update(id, params, options?)
+mc.broadcasts.send(id, params?, options?)
 mc.broadcasts.listRuns(id, params?)              // Page<BroadcastRun>
 mc.broadcasts.getMetrics(id)
 
-mc.webhooks.create(params)                       // returns the signing secret once
+mc.webhooks.create(params, options?)             // returns the signing secret once
 mc.webhooks.list(params?)                        // Page<Webhook>
 mc.webhooks.get(id)
-mc.webhooks.update(id, params)
-mc.webhooks.delete(id)
-mc.webhooks.rotateSecret(id)
+mc.webhooks.update(id, params, options?)
+mc.webhooks.delete(id, options?)
+mc.webhooks.rotateSecret(id, options?)
 
 mc.workflows.list(params?)                       // Page<Workflow>
 mc.workflows.get(id)
-mc.workflows.trigger(reference, body, options?)  // options: { idempotencyKey? }
-mc.workflows.pause(id)
-mc.workflows.unpause(id)
+mc.workflows.trigger(reference, body, options?)
+mc.workflows.pause(id, options?)
+mc.workflows.unpause(id, options?)
 mc.workflows.listRuns(id, params?)               // Page<WorkflowRun>
-mc.workflows.getRun(id, runId)
+mc.workflows.getRun(id, runId, { historyBefore? })  // latest 100 history entries, then page back
 
 mc.forms.submit(formId, submission)              // unauthenticated
 mc.forms.confirmDoubleOptIn(formId, token)
@@ -274,22 +279,28 @@ await mc.suppressions.batchDelete(result.results.map(item => item.id).filter(Boo
 
 ### Events
 
-Fire trigger events into the ingest pipeline and read their archived history.
+Send business events, follow each one until it is ready for workflows, and read the ready history. Acceptance is durable but not the same as readiness: an accepted event can still fail preparation.
 
 ```ts
-// Fire a single event. Fire-and-forget: resolves with the accepted count.
-const result = await mc.events.fire('purchase-completed', {
-  eventId: 'order_1042',
-  occurredAt: '2026-07-18T10:30:00Z',
+import { randomUUID } from 'node:crypto'
+
+// Send one event. The receipt says it was accepted; `status` says whether it is ready.
+const receipt = await mc.events.fire('purchase-completed', {
+  eventId: 'order_1042', // your occurrence id: reuse it with the same input to retry safely
+  occurredAt: '2026-10-29T10:30:00Z',
+  contactId: 'con_01hxyz...',
   amount: 149.0,
   currency: 'usd',
 })
-console.log(result.accepted) // 1
+console.log(receipt.id, receipt.isDuplicate, receipt.readinessAtAcceptance) // 'ev_...', false, 'pending'
 
-// Fire a batch of up to 500 events of one schema.
+const status = await mc.events.status('purchase-completed', receipt.id)
+console.log(status.readinessState) // 'pending' | 'ready' | 'failed' | 'outcome_unknown'
+
+// Send up to 500 events of one schema. Inspect every item: a batch can partly succeed.
 const batch = await mc.events.fireBatch('page-viewed', [
-  { userId: 'u_1', path: '/pricing' },
-  { userId: 'u_2', path: '/docs' },
+  { eventId: 'view_1', contactId: 'con_1', path: '/pricing' },
+  { eventId: 'view_2', contactId: 'con_2', path: '/docs' },
 ])
 console.log(batch.summary) // { accepted: 2, failed: 0 }
 
@@ -300,6 +311,28 @@ for (const event of page.data) console.log(event.id, event.createdAt)
 while (page.pagination.hasMore && page.pagination.nextCursor) {
   page = await mc.events.list({ schema: 'purchase-completed', cursor: page.pagination.nextCursor })
   for (const event of page.data) console.log(event.id, event.createdAt)
+}
+
+// From your authenticated server, link a browser's anonymous identity to the signed-in contact.
+await mc.eventIdentities.identify({
+  sourceId: 'source_website',
+  subjectSchemaId: 'sch_01hxyz...',
+  anonymousId: 'visitor_1042',
+  contactId: 'con_01hxyz...',
+  operationId: randomUUID(), // reuse with the same body to retry
+  expectedAliasRevision: '0',
+})
+```
+
+### Records
+
+Records are flat: base fields plus your custom attribute values at the top level. Deleting one runs in the background.
+
+```ts
+const deletion = await mc.records.delete('students', 'con_01hxyz...')
+if (deletion.status === 'pending') {
+  const later = await mc.records.getDeletion(deletion.operationId)
+  console.log(later.status, later.message) // 'pending' | 'blocked' | 'completed' | 'cancelled'
 }
 ```
 
@@ -313,10 +346,11 @@ const page = await mc.templates.list({ limit: 20 })
 const template = await mc.templates.get(page.data[0].id)
 console.log(template.recipientDataPath, template.expectedDataRepresentation)
 
-// Send it to a contact resolved from the payload.
-await mc.templates.send(template.id, {
+// Send it to a contact resolved from the payload, then inspect the outcome.
+const result = await mc.templates.send(template.id, {
   data: { contact: { email: 'student@example.com', firstName: 'Ada' } },
 })
+if (result.status === 'failed') console.error(result.error)
 ```
 
 ### Broadcasts
@@ -422,7 +456,7 @@ npm run check.version # assert src/version.ts matches package.json (also runs on
 npm run sync.version  # stamp package.json's version into src/version.ts
 ```
 
-`VERSION` in `src/version.ts` is sent as the `User-Agent` of every request, so it must match `package.json`. The canary and dev workflows set their version in CI and run `sync.version` before publishing; `prepublishOnly` refuses to publish a mismatch.
+`VERSION` in `src/version.ts` is sent as the `User-Agent` of every request, so it must match `package.json`. The canary and dev workflows set their version in CI and run `sync.version` before publishing; `prepack` refuses to pack a mismatch. [RELEASING.md](RELEASING.md) describes how a release is verified and published.
 
 ## License
 

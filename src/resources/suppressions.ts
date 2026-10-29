@@ -31,10 +31,11 @@ export class SuppressionsResource {
   }
 
   /** Removes a suppression by id, re-allowing communication to that identifier. */
-  delete(id: string): Promise<Deleted> {
+  delete(id: string, options: RequestOptions = {}): Promise<Deleted> {
     return this.http.request<Deleted>({
       method: 'DELETE',
       path: `/contacts/suppressions/${encodeURIComponent(id)}`,
+      idempotencyKey: options.idempotencyKey,
     })
   }
 

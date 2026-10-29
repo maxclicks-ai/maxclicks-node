@@ -1,6 +1,14 @@
 import type { HttpClient } from '../core/HttpClient'
 import { fetchFirstPage, Page, type PageFetcher } from '../pagination'
-import type { ContactRecord, Deleted, ListParams, Segment, SegmentCount, SegmentCreateParams } from '../types'
+import type {
+  ContactRecord,
+  Deleted,
+  ListParams,
+  RequestOptions,
+  Segment,
+  SegmentCount,
+  SegmentCreateParams,
+} from '../types'
 
 /** Generate and manage AI-defined contact filters (segments). */
 export class SegmentsResource {
@@ -14,8 +22,13 @@ export class SegmentsResource {
   }
 
   /** Generates a segment from a natural-language `requirements` prompt (slow, billed). The generated expression is never returned. */
-  create(params: SegmentCreateParams): Promise<Segment> {
-    return this.http.request<Segment>({ method: 'POST', path: '/segments', body: params })
+  create(params: SegmentCreateParams, options: RequestOptions = {}): Promise<Segment> {
+    return this.http.request<Segment>({
+      method: 'POST',
+      path: '/segments',
+      body: params,
+      idempotencyKey: options.idempotencyKey,
+    })
   }
 
   /** Fetches a segment by id. */
@@ -24,8 +37,12 @@ export class SegmentsResource {
   }
 
   /** Permanently deletes a segment. */
-  delete(id: string): Promise<Deleted> {
-    return this.http.request<Deleted>({ method: 'DELETE', path: `/segments/${encodeURIComponent(id)}` })
+  delete(id: string, options: RequestOptions = {}): Promise<Deleted> {
+    return this.http.request<Deleted>({
+      method: 'DELETE',
+      path: `/segments/${encodeURIComponent(id)}`,
+      idempotencyKey: options.idempotencyKey,
+    })
   }
 
   /** Returns the segment's live matching contact count and the schema's total contact count. */

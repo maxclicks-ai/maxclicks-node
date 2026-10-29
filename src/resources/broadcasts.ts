@@ -27,11 +27,12 @@ export class BroadcastsResource {
   }
 
   /** Partially updates a broadcast. Rejected once sending has started. An explicit `null` clears a nullable field. */
-  update(id: string, params: BroadcastUpdateParams): Promise<Broadcast> {
+  update(id: string, params: BroadcastUpdateParams, options: RequestOptions = {}): Promise<Broadcast> {
     return this.http.request<Broadcast>({
       method: 'PATCH',
       path: `/broadcasts/${encodeURIComponent(id)}`,
       body: params,
+      idempotencyKey: options.idempotencyKey,
     })
   }
 

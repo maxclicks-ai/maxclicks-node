@@ -3,8 +3,8 @@ import { fetchFirstPage, Page, type PageFetcher } from '../pagination'
 import type {
   AuditTrailEntry,
   AuditTrailListParams,
-  Deleted,
   MaxclicksRecord,
+  RecordDeletionStatus,
   RecordInput,
   RequestOptions,
 } from '../types'
@@ -67,11 +67,32 @@ export class RecordsResource {
     })
   }
 
-  /** Deletes a record by its platform id. */
-  delete(schema: string, id: string): Promise<Deleted> {
-    return this.http.request<Deleted>({
+  /**
+   * Requests deletion of a record. Deletion runs in the background: the result is `completed` at once only when
+   * nothing remains to drain, so follow a `pending` result with `getDeletion`. The API requires an idempotency
+   * key identifying this attempt; one is generated when none is given. Pass your own to retry the same attempt.
+   */
+  delete(schema: string, id: string, options: RequestOptions = {}): Promise<RecordDeletionStatus> {
+    return this.http.request<RecordDeletionStatus>({
       method: 'DELETE',
       path: `/schemas/${encodeURIComponent(schema)}/records/${encodeURIComponent(id)}`,
+      idempotencyKey: options.idempotencyKey || globalThis.crypto.randomUUID(),
+    })
+  }
+
+  /** Reads the progress of a record deletion by the `operationId` that `delete` returned. */
+  getDeletion(operationId: string): Promise<RecordDeletionStatus> {
+    return this.http.request<RecordDeletionStatus>({
+      method: 'GET',
+      path: `/record-deletions/${encodeURIComponent(operationId)}`,
+    })
+  }
+
+  /** Cancels a record deletion before removal begins. Removed data cannot be restored. */
+  cancelDeletion(operationId: string): Promise<RecordDeletionStatus> {
+    return this.http.request<RecordDeletionStatus>({
+      method: 'POST',
+      path: `/record-deletions/${encodeURIComponent(operationId)}/cancel`,
     })
   }
 

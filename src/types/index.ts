@@ -26,9 +26,8 @@ export interface ListParams {
 }
 
 /**
- * Per-call options accepted by the write operations the API documents as
- * idempotency-aware: `records.create`, `records.upsert`, `suppressions.batchCreate`,
- * `suppressions.batchDelete`, `templates.send`, `broadcasts.send`, and `workflows.trigger`.
+ * Per-call options accepted by every write the API can deduplicate. `templates.send` and `records.delete`
+ * always send a key: one is generated when none is given.
  */
 export interface RequestOptions {
   /**
@@ -50,6 +49,15 @@ export interface Me {
   user: { id: string; email: string; name: string | null }
   space: { id: string; slug: string; name: string } | null
   role: { name: 'admin' | 'non-paid admin' | 'member'; label: string; description: string } | null
+  /** Present when the caller is an OAuth access token, `null` for an API key. */
+  oauth: {
+    /** The app's registered client id, or the URL of its Client ID Metadata Document. */
+    clientId: string
+    /** The resource the token was issued for: the MCP server or the Public API. */
+    resource: string
+    scopes: Array<'read' | 'write' | 'admin'>
+    expiresAt: string
+  } | null
 }
 
 // ---------------------------------------------------------------------------
@@ -210,10 +218,20 @@ export interface ObjectInput {
 
 export type RecordInput = ContactInput | ObjectInput
 
-/** Echoed by every delete endpoint. */
+/** Echoed by the delete endpoints other than `records.delete`. */
 export interface Deleted {
   id: string
   deleted: true
+}
+
+/** A record deletion, which runs in the background. Follow it with `records.getDeletion`. */
+export interface RecordDeletionStatus {
+  /** Opaque operation id. Keep the whole value. */
+  operationId: string
+  status: 'pending' | 'blocked' | 'completed' | 'cancelled'
+  /** Advisory only: the cancel endpoint checks the requester, permission and phase itself. */
+  canCancel: boolean
+  message: string
 }
 
 // ---------------------------------------------------------------------------
@@ -309,21 +327,49 @@ export interface Suppression {
 
 /** Input for firing an event. `id` is ignored by the server on fire. */
 export interface EventInput {
-  /** Deduplication key. */
+  /**
+   * Your occurrence id, scoped to the space and event schema. Reuse it with identical input and `occurredAt`
+   * to retry safely; changed input under the same id is refused as `event_id_conflict`. Generated when omitted.
+   */
   eventId?: string | null
-  /** ISO date-time for when the event actually happened. */
+  /** ISO date-time for when the event happened: at most 366 days ago or five minutes ahead. Defaults to acceptance time. */
   occurredAt?: string
+  /** The contact this event is about. Mutually exclusive with `objectId`. */
+  contactId?: string | null
+  /** The object this event is about. Mutually exclusive with `contactId`. */
+  objectId?: string | null
   [customAttributeKey: string]: unknown
 }
 
+/** Whether an event was ready for workflows when it was accepted. */
+export type EventAcceptanceReadiness = 'pending' | 'ready'
+
+/** An event's current readiness: `failed` and `outcome_unknown` are terminal for that occurrence. */
+export type EventReadinessState = 'pending' | 'ready' | 'failed' | 'outcome_unknown'
+
+/** The receipt of one accepted event. Poll `events.status` with `id` until it is ready. */
 export interface FireResult {
-  accepted: number
+  accepted: 1
+  /** The maxclicks event id. */
+  id: string
+  /** Your occurrence id, or the one generated for it. */
+  eventId: string
+  /** Whether this repeated an occurrence already accepted, which replays the original receipt. */
+  isDuplicate: boolean
+  /** The state at acceptance, which never changes. Read `events.status` for the current state. */
+  readinessAtAcceptance: EventAcceptanceReadiness
 }
 
 export interface BatchFireItemResult {
   index: number
-  status: 'accepted' | 'failed'
+  status: 'accepted' | 'failed' | 'rolled_back'
   error?: MaxclicksApiErrorBody
+  id?: string
+  eventId?: string | null
+  isDuplicate?: boolean
+  readinessAtAcceptance?: EventAcceptanceReadiness
+  /** Present on an admission failure: how long to wait before retrying that occurrence. */
+  retryAfterMilliseconds?: number
 }
 
 export interface BatchFireResult {
@@ -338,13 +384,59 @@ export interface EventBatchParams {
   onError?: 'continue' | 'abort'
 }
 
+/** A ready event. Custom stored values are flattened into the top level. */
 export interface Event {
   id: string
   schemaId: string
   schemaSlug: string
   eventId: string | null
   createdAt: string
+  receivedAt: string
+  occurredAt: string
+  readyAt: string | null
+  readinessState: EventReadinessState
+  definitionRevision: string
+  contactId: string | null
+  objectId: string | null
   [customAttributeKey: string]: unknown
+}
+
+/** The current state of one accepted event, whether or not it is ready yet. */
+export interface EventStatus {
+  id: string
+  eventId: string | null
+  receivedAt: string
+  occurredAt: string
+  readyAt: string | null
+  readinessState: EventReadinessState
+  definitionRevision: string
+  contactId: string | null
+  objectId: string | null
+  /** The accepted input until the event is ready, then its prepared data. */
+  data: Record<string, unknown>
+}
+
+/** Binds an anonymous browser identity to a contact, or unbinds it with `contactId: null`. Call it from your server. */
+export interface EventIdentityInput {
+  /** The browser source the identity was collected by. */
+  sourceId: string
+  /** The contact schema id (not its slug). */
+  subjectSchemaId: string
+  /** The browser's anonymous id in that source. */
+  anonymousId: string
+  contactId: string | null
+  /** A stable UUID for this change. Reuse it with the same body to retry. */
+  operationId: string
+  /** The last revision you saw for this identity, as a decimal string: `"0"` for a new one. */
+  expectedAliasRevision: string
+}
+
+export interface EventIdentityResult {
+  /** The committed revision, as a decimal string. Do not convert it to a floating-point number. */
+  identityRevision: string
+  /** The previous and new contacts whose event history can change. */
+  affectedSubjectIds: string[]
+  isDuplicate: boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -472,6 +564,11 @@ export interface FormContactInput {
 }
 
 export interface FormSubmission {
+  /**
+   * A stable id for this input, `rpi1.<Unix milliseconds>.<UUIDv4>`, required when creating the contact needs AI
+   * auto-fill. Keep it with the original input when you retry.
+   */
+  submissionId?: string
   contact: FormContactInput
   emailMarketingConsent?: boolean | null
   captchaToken?: string | null
@@ -711,6 +808,7 @@ export type WorkflowRunStatus = 'running' | 'completed' | 'failed'
 
 /** One entry in a run's step history: when it entered and left a step and which slot it took. */
 export interface WorkflowRunStepHistoryRecord {
+  index: number
   stepId: string
   stepLabel: string | null
   slotKey: string | null
@@ -727,7 +825,20 @@ export interface WorkflowRun {
   versionId: string
   status: WorkflowRunStatus
   failureReason: string | null
+  /** Up to the latest 100 history entries. Page back with `nextHistoryBeforeIndex`. */
   stepHistory: WorkflowRunStepHistoryRecord[]
+  /** The run's persisted execution count, not the length of `stepHistory`. */
+  stepCount: number
+  parentRunId: string | null
+  parentExecutionOrdinal: number | null
+  /** Pass as `historyBefore` to read earlier history; `null` when there is none. */
+  nextHistoryBeforeIndex: number | null
+}
+
+/** Pages back through a run's step history. */
+export interface WorkflowRunGetParams {
+  /** Return history entries strictly below this index: the previous `nextHistoryBeforeIndex`. */
+  historyBefore?: number
 }
 
 // ---------------------------------------------------------------------------
